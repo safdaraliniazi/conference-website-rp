@@ -3,12 +3,43 @@ import { Avatar, Button, Card, CardBody, CardFooter, CardHeader, Chip, IconButto
 import { MagnifyingGlassIcon, PencilIcon, UserPlusIcon } from '@heroicons/react/24/solid';
 import ReviewerSelect from './reviewerSelect';
 import AcceptOrRejectSubmissionModal from './accept-or-reject-submission-modal';
+import * as XLSX from 'xlsx';
 
 
 function ViewAllSubmissionsTable() {
     const [files, setFiles] = useState([]);
     const [error, setError] = useState(null);
     const [allReviewers, setAllReviewers] = useState([]);
+
+    const handleDownloadExcel = () => {
+        // Define headers for the Excel file with only necessary details
+        const headers = ["Name", "Email", "File Name", "Track", "Status", "Recommendation"];
+
+        // Map `files` data to the format needed for Excel
+        const data = files.map(file => [
+            file.name,                               // Name of the file submitter
+            file.email,                              // Email of the file submitter
+            file.filename,                           // File name
+            file.track,                              // Track information
+            file.status,                             // Submission status
+            file.review.recommendation,              // Review recommendation (e.g., accept/reject)
+            // file.reviewer                            // Reviewer ID
+        ]);
+
+        // Add headers at the top of data
+        const worksheetData = [headers, ...data];
+
+        // Create a new workbook and worksheet
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+
+        // Append worksheet to workbook
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Submissions");
+
+        // Generate Excel file and trigger download
+        XLSX.writeFile(workbook, "submissions.xlsx");
+    };
+
 
     // view all user submissions
     useEffect(() => {
@@ -123,8 +154,8 @@ function ViewAllSubmissionsTable() {
                             </Typography>
                         </div>
                         <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-                            <Button variant="outlined" size="sm">
-                                view all
+                            <Button variant="outlined" size="sm" onClick={handleDownloadExcel}>
+                                Download Excel File
                             </Button>
                             <Button className="flex items-center gap-3" size="sm">
                                 <UserPlusIcon strokeWidth={2} className="h-4 w-4" /> Add member

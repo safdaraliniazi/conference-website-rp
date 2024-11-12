@@ -117,7 +117,7 @@ export function UserTable({ allUsers }) {
                                         {/* user id */}
                                         <td className={classes}>
                                             <div className="flex items-center gap-3">
-                                                <Avatar src={fullName || "path/to/placeholder.jpg"} alt={fullName} size="sm" />
+                                                <Avatar src={"https://static.thenounproject.com/png/1743561-200.png"} size="sm" />
                                                 <div className="flex flex-col">
                                                     <Typography
                                                         variant="small"
