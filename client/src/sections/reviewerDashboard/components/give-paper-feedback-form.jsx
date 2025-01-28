@@ -18,11 +18,11 @@ function GivePaperFeedbackForm({ submissionId, filename, url }) {
         try {
             let apiUrl;
             if (recommendation === 'accept')
-                apiUrl = 'http://localhost:5000/api/reviewer/accept-submission';
+                apiUrl = 'https://conference-website-rp.onrender.com/api/reviewer/accept-submission';
             else if (recommendation === 'reject')
-                apiUrl = 'http://localhost:5000/api/reviewer/reject-submission';
+                apiUrl = 'https://conference-website-rp.onrender.com/api/reviewer/reject-submission';
             else
-                apiUrl = 'http://localhost:5000/api/reviewer/add-submission-review';
+                apiUrl = 'https://conference-website-rp.onrender.com/api/reviewer/add-submission-review';
 
             const response = await fetch(apiUrl, {
                 method: 'POST',

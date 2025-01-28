@@ -20,7 +20,7 @@ function ReviewModal({ review, submissionId }) {
         formData.append('submissionId', submissionId);
 
         try {
-            const response = await fetch('http://localhost:5000/api/users/submit-revision', {
+            const response = await fetch('https://conference-website-rp.onrender.com/api/users/submit-revision', {
                 method: 'POST',
                 body: formData,
                 headers: {

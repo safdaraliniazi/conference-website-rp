@@ -9,7 +9,7 @@ function AcceptOrRejectSubmissionModal({ image, submissionId }) {
     // function to handle fetch image
     useEffect(() => {
         const token = localStorage.getItem('token');
-        const url = `http://localhost:5000/api/users/view-submission-screenshot/${image}`;
+        const url = `https://conference-website-rp.onrender.com/api/users/view-submission-screenshot/${image}`;
 
         fetch(url, {
             method: 'POST',
@@ -41,7 +41,7 @@ function AcceptOrRejectSubmissionModal({ image, submissionId }) {
 
     const handleAccept = () => {
         const token = localStorage.getItem('token');
-        const url = 'http://localhost:5000/api/admin/register-submission-accept';
+        const url = 'https://conference-website-rp.onrender.com/api/admin/register-submission-accept';
 
         fetch(url, {
             method: 'POST',
@@ -69,7 +69,7 @@ function AcceptOrRejectSubmissionModal({ image, submissionId }) {
 
     const handleReject = () => {
         const token = localStorage.getItem('token');
-        const url = 'http://localhost:5000/api/admin/register-submission-reject';
+        const url = 'https://conference-website-rp.onrender.com/api/admin/register-submission-reject';
 
         fetch(url, {
             method: 'POST',

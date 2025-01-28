@@ -49,7 +49,7 @@ function SignUp() {
             return;
         }
         try {
-            await axios.post('http://localhost:5000/api/users/register', { fullName, password, email });
+            await axios.post('https://conference-website-rp.onrender.com/api/users/register', { fullName, password, email });
             setOtpSent(true); // OTP sent, waiting for verification
         } catch (error) {
             console.error(error);
@@ -59,7 +59,7 @@ function SignUp() {
     const handleOtpSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/api/users/verify-otp', { email, otp })
+            const response = await axios.post('https://conference-website-rp.onrender.com/api/users/verify-otp', { email, otp })
                 .then((response) => {
                     localStorage.setItem('token', response.data.token);
                     const decodedToken = jwtDecode(response.data.token)

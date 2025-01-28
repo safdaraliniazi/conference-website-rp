@@ -25,7 +25,7 @@ const ReviewerSelect = ({ currentReviewer, allReviewers, submissionId }) => {
     
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api/admin/update-submission-reviewer', {
+            await axios.post('https://conference-website-rp.onrender.com/api/admin/update-submission-reviewer', {
                 submissionId,
                 reviewerId: newReviewer._id
             }, {

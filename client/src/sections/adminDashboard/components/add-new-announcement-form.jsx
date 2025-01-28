@@ -11,7 +11,7 @@ function AddNewAnnouncementForm() {
         event.preventDefault();
 
         try {
-            await axios.post('http://localhost:5000/api/admin/add-new-announcement',
+            await axios.post('https://conference-website-rp.onrender.com/api/admin/add-new-announcement',
                 { title, description, date },
                 {
                     headers: {

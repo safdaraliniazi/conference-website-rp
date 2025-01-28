@@ -75,7 +75,7 @@ const Contact = () => {
 		};
 
 		try {
-			const response = await fetch('http://localhost:5000/api/general/contact-us-mail', {
+			const response = await fetch('https://conference-website-rp.onrender.com/api/general/contact-us-mail', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'

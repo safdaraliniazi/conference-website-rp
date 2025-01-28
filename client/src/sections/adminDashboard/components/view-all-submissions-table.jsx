@@ -46,7 +46,7 @@ function ViewAllSubmissionsTable() {
         // Fetch the list of files from the server with Authorization header
         const fetchFiles = async () => {
             try {
-                const response = await fetch('http://localhost:5000/api/admin/view-all-user-submissions', {
+                const response = await fetch('https://conference-website-rp.onrender.com/api/admin/view-all-user-submissions', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -73,7 +73,7 @@ function ViewAllSubmissionsTable() {
         const fetchUsers = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch('http://localhost:5000/api/admin/all-reviewers', {
+                const response = await fetch('https://conference-website-rp.onrender.com/api/admin/all-reviewers', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -116,7 +116,7 @@ function ViewAllSubmissionsTable() {
     const handleFileClick = (filename) => {
         // Open the file in a new tab with Authorization header
         const token = localStorage.getItem('token');
-        const url = `http://localhost:5000/api/admin/view-all-user-submissions/${filename}`;
+        const url = `https://conference-website-rp.onrender.com/api/admin/view-all-user-submissions/${filename}`;
 
         fetch(url, {
             headers: {

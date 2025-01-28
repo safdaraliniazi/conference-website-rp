@@ -35,7 +35,7 @@ function AddNewSubmissionForm() {
         // console.log(file, name, email, members, selectedTrack);
 
         try {
-            const response = await fetch('http://localhost:5000/api/users/add-new-submission', {
+            const response = await fetch('https://conference-website-rp.onrender.com/api/users/add-new-submission', {
                 method: 'POST',
                 body: formData,
                 headers: {

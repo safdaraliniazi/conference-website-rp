@@ -15,7 +15,7 @@ function GivePaperFeedback() {
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        const url = `http://localhost:5000/api/reviewer/view-assigned-submissions/${filename}`;
+        const url = `https://conference-website-rp.onrender.com/api/reviewer/view-assigned-submissions/${filename}`;
 
         fetch(url, {
             method: 'POST',

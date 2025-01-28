@@ -16,7 +16,7 @@ const ChangeUserRole = ({ role, email }) => {
         setSelectedRole(newRole);
 
         try {
-            await axios.post(`http://localhost:5000/api/admin/change-user-role`,
+            await axios.post(`https://conference-website-rp.onrender.com/api/admin/change-user-role`,
                 { email, role: newRole },
                 {
                     headers: {

@@ -15,7 +15,7 @@ function ViewAssignedSubmissionsTable() {
         // Fetch the list of files from the server with Authorization header
         const fetchFiles = async () => {
             try {
-                const response = await fetch('http://localhost:5000/api/reviewer/view-assigned-submissions', {
+                const response = await fetch('https://conference-website-rp.onrender.com/api/reviewer/view-assigned-submissions', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -41,7 +41,7 @@ function ViewAssignedSubmissionsTable() {
     const openFileInNewTab = (filename) => {
         // Open the file in a new tab with Authorization header
         const token = localStorage.getItem('token');
-        const url = `http://localhost:5000/api/reviewer/view-assigned-submissions/${filename}`;
+        const url = `https://conference-website-rp.onrender.com/api/reviewer/view-assigned-submissions/${filename}`;
 
         fetch(url, {
             method: 'POST',

@@ -9,7 +9,7 @@ function ViewScreenshotModal({ image, submissionId }) {
     // function to handle fetch image
     useEffect(() => {
         const token = localStorage.getItem('token');
-        const url = `http://localhost:5000/api/users/view-submission-screenshot/${image}`;
+        const url = `https://conference-website-rp.onrender.com/api/users/view-submission-screenshot/${image}`;
 
         fetch(url, {
             method: 'POST',

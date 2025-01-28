@@ -11,7 +11,7 @@ export function AnnouncementsCard() {
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/general/get-all-announcements', {
+        const response = await fetch('https://conference-website-rp.onrender.com/api/general/get-all-announcements', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}` // Adjust the token retrieval as needed
