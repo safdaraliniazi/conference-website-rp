@@ -46,7 +46,7 @@ router.post('/register', async (req, res) => {
         // console.log(tempStore)
 
         // Send OTP to user's email
-        // await sendAccountVerificationMail(email, otp);
+        await sendAccountVerificationMail(email, otp);
 
         return res.status(200).json({ message: 'OTP sent to your email.' });
     } catch (err) {
@@ -126,21 +126,21 @@ router.post('/add-new-submission', verifyToken, upload.single('file'), async (re
     const submission = new Submission({
         filename,
         userId: req.user.userId,
-        name,      
-        email,    
+        name,
+        email,
         members: JSON.parse(members), // Parse members back to object
-        track,     
+        track,
     });
 
     try {
         await submission.save();
-        
+
         // send email to admin for new submission added
         // await sendToAdminsNewSubmission(submission)
 
         // send email to members of team for new submission added
         // await sendToMembersNewSubmission(submission)
-        
+
         res.status(201).json({ message: 'File uploaded successfully', submission });
     } catch (err) {
         console.log(err)
