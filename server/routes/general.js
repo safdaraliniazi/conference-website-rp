@@ -24,7 +24,7 @@ router.post('/contact-us-mail', async (req, res) => {
     console.log('Received contact form data:', { firstName, lastName, email, message });
 
     // mail to admin: new query from contanct us 
-    // await sendToAdminNewQueryFromContactUs({ firstName, lastName, email, message });
+    await sendToAdminNewQueryFromContactUs({ firstName, lastName, email, message });
 
     // Send a response back to the client
     res.status(200).json({ message: 'Contact form data received successfully' });

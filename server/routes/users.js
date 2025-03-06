@@ -136,10 +136,10 @@ router.post('/add-new-submission', verifyToken, upload.single('file'), async (re
         await submission.save();
 
         // send email to admin for new submission added
-        // await sendToAdminsNewSubmission(submission)
+        await sendToAdminsNewSubmission(submission)
 
         // send email to members of team for new submission added
-        // await sendToMembersNewSubmission(submission)
+        await sendToMembersNewSubmission(submission)
 
         res.status(201).json({ message: 'File uploaded successfully', submission });
     } catch (err) {
@@ -191,7 +191,7 @@ router.post('/submit-revision', verifyToken, upload.single('file'), async (req, 
         await submission.save();
 
         // send mail to reviewer: revision submitted
-        // await sendToReviewerRevisionSubmitted(submission)
+        await sendToReviewerRevisionSubmitted(submission)
 
 
         res.status(201).json({ message: 'Revision Submitted Successfully', submission });
@@ -220,7 +220,7 @@ router.post('/register-now', verifyToken, upload.single('file'), async (req, res
         await submission.save();
 
         // 10. mail to admins: a new submission has added payment details
-        // await sendToAdminsNewRegistrationDetailsAdded(submission)
+        await sendToAdminsNewRegistrationDetailsAdded(submission)
 
         res.status(201).json({ message: 'Revision Submitted Successfully', submission });
     } catch (err) {

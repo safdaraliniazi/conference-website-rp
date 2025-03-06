@@ -53,7 +53,7 @@ router.post('/change-user-role/', verifyAdmin, async (req, res) => {
         }
 
         // mail to user: role has been updated
-        // await sendToUserRoleUpdated(updatedUser);
+        await sendToUserRoleUpdated(updatedUser);
 
         res.status(200).json(updatedUser);
     } catch (error) {
@@ -130,10 +130,10 @@ router.post('/update-submission-reviewer', verifyAdmin, async (req, res) => {
             return res.status(404).json({ message: 'Submission not found.' });
         }
         // mail to reviewer a new submission has been assigned
-        // await sendToReviewerNewSubmissionAssigned(updatedSubmission, reviewerId);
+        await sendToReviewerNewSubmissionAssigned(updatedSubmission, reviewerId);
 
         // email to user and members: submission is in review
-        // await sendToUserAndMembersSubmissionInReview(updatedSubmission);
+        await sendToUserAndMembersSubmissionInReview(updatedSubmission);
 
         res.status(200).json(updatedSubmission);
     } catch (error) {
@@ -173,7 +173,7 @@ router.post('/register-submission-reject', verifyAdmin, async (req, res) => {
 
         res.status(200).json(updatedSubmission);
         // mail to user and memeber: payment deatils not correct
-        // await sendToUserAndMembersPaymentDetailsNotCorrect(updatedSubmission)
+        await sendToUserAndMembersPaymentDetailsNotCorrect(updatedSubmission)
 
     } catch (error) {
         console.error('Error:', error);
@@ -212,7 +212,7 @@ router.post('/register-submission-accept', verifyAdmin, async (req, res) => {
         res.status(200).json(updatedSubmission);
 
         // 12. mail to user and memeber: payment deatils not correct
-        // await sendToUserAndMembersRegistrationSuccess(updatedSubmission)
+        await sendToUserAndMembersRegistrationSuccess(updatedSubmission)
 
     } catch (error) {
         console.error('Error:', error);

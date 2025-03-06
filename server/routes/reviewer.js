@@ -94,7 +94,7 @@ router.post('/add-submission-review', verifyReviewer, async (req, res) => {
         await submission.save();
 
         // send mail to mambers submission ha been reviewed
-        // await sendToUserAndMembersSubmissionReviewed(submission)
+        await sendToUserAndMembersSubmissionReviewed(submission)
 
         res.status(200).json({ message: 'Submission review added successfully.', submission });
     } catch (err) {
@@ -136,7 +136,7 @@ router.post('/reject-submission', verifyReviewer, async (req, res) => {
         await submission.save();
 
         // 8. mail to user and members: your submission has been rejected
-        // await sendToUserAndMembersSubmissionRejected(submission)
+        await sendToUserAndMembersSubmissionRejected(submission)
 
 
         res.status(200).json({ message: 'Submission review added successfully.', submission });
@@ -179,7 +179,7 @@ router.post('/accept-submission', verifyReviewer, async (req, res) => {
         await submission.save();
 
         // 8. mail to user and members: your submission has been rejected
-        // await sendToUserAndMembersSubmissionAccepted(submission)
+        await sendToUserAndMembersSubmissionAccepted(submission)
 
         res.status(200).json({ message: 'Submission review added successfully.', submission });
     } catch (err) {
