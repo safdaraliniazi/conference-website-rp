@@ -5,6 +5,7 @@ import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 import { UserContext } from '../../UserContext';
 import { useNavigate } from 'react-router-dom';
+import API_BASE_URL from "../../config/api";
 
 function SignIn() {
     const navigate = useNavigate();
@@ -36,7 +37,7 @@ function SignIn() {
             return;
         }
         try {
-            const response = await axios.post('https://conference-website-rp.onrender.com/api/users/login', { email, password });
+            const response = await axios.post(`${API_BASE_URL}/api/users/login`, { email, password });
             console.log(response.data.token);
             localStorage.setItem('token', response.data.token);
             const decodedToken = jwtDecode(response.data.token);

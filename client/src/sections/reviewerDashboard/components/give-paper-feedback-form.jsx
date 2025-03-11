@@ -2,6 +2,7 @@ import { LinkIcon } from '@heroicons/react/24/solid';
 import { Button, Radio, Textarea } from '@material-tailwind/react';
 import React, { useEffect, useState } from 'react';
 import { ConfirmationModal } from '../../../components/confirmation-modal';
+import API_BASE_URL from "../../../config/api";
 
 
 function GivePaperFeedbackForm({ submissionId, filename, url }) {
@@ -18,11 +19,11 @@ function GivePaperFeedbackForm({ submissionId, filename, url }) {
         try {
             let apiUrl;
             if (recommendation === 'accept')
-                apiUrl = 'https://conference-website-rp.onrender.com/api/reviewer/accept-submission';
+                apiUrl = `${API_BASE_URL}/api/reviewer/accept-submission`;
             else if (recommendation === 'reject')
-                apiUrl = 'https://conference-website-rp.onrender.com/api/reviewer/reject-submission';
+                apiUrl = `${API_BASE_URL}/api/reviewer/reject-submission`;
             else
-                apiUrl = 'https://conference-website-rp.onrender.com/api/reviewer/add-submission-review';
+                apiUrl = `${API_BASE_URL}/api/reviewer/add-submission-review`;
 
             const response = await fetch(apiUrl, {
                 method: 'POST',

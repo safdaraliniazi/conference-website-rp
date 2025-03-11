@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios'; // Ensure axios is installed
 import { ConfirmationModal } from '../../../components/confirmation-modal';
+import API_BASE_URL from "../../../config/api";
 
 const ReviewerSelect = ({ currentReviewer, allReviewers, submissionId }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -22,10 +23,10 @@ const ReviewerSelect = ({ currentReviewer, allReviewers, submissionId }) => {
     const handleConfirm = async () => {
         setSelectedReviewer(newReviewer._id);
         setIsOpen(false);
-    
+
         try {
             const token = localStorage.getItem('token');
-            await axios.post('https://conference-website-rp.onrender.com/api/admin/update-submission-reviewer', {
+            await axios.post(`${API_BASE_URL}/api/admin/update-submission-reviewer`, {
                 submissionId,
                 reviewerId: newReviewer._id
             }, {

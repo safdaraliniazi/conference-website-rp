@@ -4,6 +4,7 @@ import {
   CardBody,
   Typography,
 } from "@material-tailwind/react";
+import API_BASE_URL from "../../../config/api";
 
 export function AnnouncementsCard() {
   const [announcements, setAnnouncements] = useState([]);
@@ -11,7 +12,7 @@ export function AnnouncementsCard() {
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
-        const response = await fetch('https://conference-website-rp.onrender.com/api/general/get-all-announcements', {
+        const response = await fetch(`${API_BASE_URL}/api/general/get-all-announcements`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}` // Adjust the token retrieval as needed

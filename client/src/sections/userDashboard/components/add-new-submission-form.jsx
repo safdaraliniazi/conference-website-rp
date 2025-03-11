@@ -1,250 +1,376 @@
-import { PlusIcon, TrashIcon } from '@heroicons/react/24/solid';
-import { Button } from '@material-tailwind/react'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react';
+import {
+    Button,
+    Card,
+    CardBody,
+    Typography,
+    Input,
+    Select,
+    Option,
+    Alert,
+} from '@material-tailwind/react';
+import {
+    PlusIcon,
+    TrashIcon,
+    DocumentArrowUpIcon,
+    InformationCircleIcon,
+    ExclamationCircleIcon,
+    CheckCircleIcon,
+} from '@heroicons/react/24/solid';
 import { ConfirmationModal } from '../../../components/confirmation-modal';
+import API_BASE_URL from "../../../config/api";
+
+const TRACKS = [
+    {
+        value: "1-innovative-product-design",
+        label: "Innovative Product Design",
+        description: "Research focused on innovative approaches to product design and development"
+    },
+    {
+        value: "2-intelligent-manufacturing-systems",
+        label: "Intelligent Manufacturing Systems",
+        description: "Research in smart manufacturing, automation, and Industry 4.0"
+    }
+];
 
 function AddNewSubmissionForm() {
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        track: '',
+        file: null
+    });
     const [members, setMembers] = useState([]);
-    const [selectedTrack, setSelectedTrack] = useState('');
-
-    const [file, setFile] = useState(null);
+    const [memberInput, setMemberInput] = useState({ name: '', email: '' });
     const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
+    const [open, setOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // confirmation modal
-    const [open, setOpen] = React.useState(false);
-    const handleOpen = () => setOpen(!open);
-
-
-    const handleFileChange = (e) => {
-        setFile(e.target.files[0]);
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+        setError(null);
     };
 
-    const handleSubmit = async (e) => {
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file && !file.name.toLowerCase().endsWith('.pdf')) {
+            setError('Please upload a PDF file');
+            return;
+        }
+        setFormData(prev => ({
+            ...prev,
+            file
+        }));
+        setError(null);
+    };
 
-        // e.preventDefault();
+    const handleMemberInputChange = (e) => {
+        const { name, value } = e.target;
+        setMemberInput(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
 
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('name', name);
-        formData.append('email', email);
-        formData.append('members', JSON.stringify(members)); // Convert the array to a JSON string
-        formData.append('track', selectedTrack);
+    const addMember = () => {
+        if (!memberInput.name || !memberInput.email) {
+            setError('Please fill in both name and email for the member');
+            return;
+        }
+        if (!memberInput.email.includes('@')) {
+            setError('Please enter a valid email address for the member');
+            return;
+        }
+        setMembers(prev => [...prev, memberInput]);
+        setMemberInput({ name: '', email: '' });
+        setError(null);
+    };
 
-        // console.log(file, name, email, members, selectedTrack);
+    const removeMember = (index) => {
+        setMembers(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const validateForm = () => {
+        if (!formData.name) return 'Name is required';
+        if (!formData.email) return 'Email is required';
+        if (!formData.email.includes('@')) return 'Please enter a valid email address';
+        if (!formData.track) return 'Please select a track';
+        if (!formData.file) return 'Please upload your paper';
+        return null;
+    };
+
+    const handleSubmit = async () => {
+        const validationError = validateForm();
+        if (validationError) {
+            setError(validationError);
+            return;
+        }
+
+        setIsSubmitting(true);
+        const submitData = new FormData();
+        submitData.append('file', formData.file);
+        submitData.append('name', formData.name);
+        submitData.append('email', formData.email);
+        submitData.append('members', JSON.stringify(members));
+        submitData.append('track', formData.track);
 
         try {
-            const response = await fetch('https://conference-website-rp.onrender.com/api/users/add-new-submission', {
+            const response = await fetch(`${API_BASE_URL}/api/users/add-new-submission`, {
                 method: 'POST',
-                body: formData,
+                body: submitData,
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
             });
 
             if (!response.ok) {
-                throw new Error(`Error submitting form: ${response.statusText}`);
+                throw new Error('Failed to submit paper');
             }
 
             const data = await response.json();
-            console.log(data);
-
-            // Refresh the list of files after successful upload
-
-        } catch (error) {
-            setError(error.message);
-            console.error(error);
+            setSuccess('Paper submitted successfully!');
+            setFormData({ name: '', email: '', track: '', file: null });
+            setMembers([]);
+            setOpen(false);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     return (
-        <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <aside className="">
-                    <div className="sticky top-[100px] bg-gray-100 p-8 rounded">
-                        <h2 className="font-bold text-2xl">Instructions</h2>
-                        <ul className="list-disc mt-4 list-inside">
-                            <li>
-                                All users must provide a valid email address and password to create
-                                an account.
-                            </li>
-                            <li>
-                                Users must not use offensive, vulgar, or otherwise inappropriate
-                                language in their name or profile information
-                            </li>
-                            <li>Users must not create multiple accounts for the same person.</li>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Instructions Card */}
+            <Card className="lg:col-span-1 h-fit sticky top-24">
+                <CardBody className="p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                        <InformationCircleIcon className="h-6 w-6 text-orange-500" />
+                        <Typography variant="h5" color="blue-gray">
+                            Submission Guidelines
+                        </Typography>
+                    </div>
+                    <div className="space-y-4">
+                        <Typography className="font-normal text-gray-600">
+                            Please ensure your submission meets the following requirements:
+                        </Typography>
+                        <ul className="list-disc list-inside space-y-2 text-gray-600">
+                            <li>Paper must be in PDF format</li>
+                            <li>Follow the provided paper template</li>
+                            <li>Include all co-authors in the members section</li>
+                            <li>Select the appropriate track for your research</li>
+                            <li>Ensure all contact information is accurate</li>
                         </ul>
-                    </div>
-                </aside>
-                <form
-                // onSubmit={handleSubmit}
-                >
-                    {/* full name */}
-                    <div className="mb-5">
-                        <label
-                            htmlFor="name"
-                            className="mb-3 block text-base font-medium text-black"
+                        <Button
+                            variant="outlined"
+                            color="orange"
+                            className="w-full mt-4"
+                            onClick={() => window.open('/submission', '_blank')}
                         >
-                            Full Name
-                        </label>
-                        <input
-                            onChange={(e) => setName(e.target.value)}
-                            type="text"
-                            name="name"
-                            id="name"
-                            placeholder="Full Name"
-                            className="w-full rounded-md border border-gray-300 bg-white py-3 px-6 text-base font-medium text-black outline-none focus:border-black focus:shadow-md"
-                        />
+                            View Full Guidelines
+                        </Button>
                     </div>
+                </CardBody>
+            </Card>
 
-
-                    {/* email */}
-                    <div className="mb-5">
-                        <label
-                            htmlFor="email"
-                            className="mb-3 block text-base font-medium text-black"
+            {/* Submission Form */}
+            <Card className="lg:col-span-2">
+                <CardBody className="p-6">
+                    {error && (
+                        <Alert
+                            color="red"
+                            icon={<ExclamationCircleIcon className="h-6 w-6" />}
+                            className="mb-6"
                         >
-                            Email Address
-                        </label>
-                        <input
-                            onChange={(e) => setEmail(e.target.value)}
-                            type="email"
-                            name="email"
-                            id="email"
-                            placeholder="Enter your email"
-                            className="w-full rounded-md border border-gray-300 bg-white py-3 px-6 text-base font-medium text-black outline-none focus:border-black focus:shadow-md"
-                        />
-                    </div>
+                            {error}
+                        </Alert>
+                    )}
+                    {success && (
+                        <Alert
+                            color="green"
+                            icon={<CheckCircleIcon className="h-6 w-6" />}
+                            className="mb-6"
+                        >
+                            {success}
+                        </Alert>
+                    )}
 
-                    {/* members */}
-                    <div className="mb-5">
-                        <label className="mb-3 block text-base font-medium text-black">
-                            Add Members
-                        </label>
-                        <ol className="ml-5 list-decimal list-inside">
-                            {members.map((member, index) => (
-                                <li key={index} className="flex mb-5 items-center">
-                                    {member.name} - {member.email}
-                                    <TrashIcon
-                                        className='h-4 w-4 ml-5 cursor-pointer'
-                                        onClick={() => {
-                                            const newMembers = members.filter((_, i) => i !== index);
-                                            setMembers(newMembers);
-                                        }} />
-                                </li>
-                            ))}
-                        </ol>
-                        <div className="-mx-3 flex flex-wrap items-center">
-                            <div className="w-full px-3 sm:flex-1 mb-5">
-                                <input
+                    <form className="space-y-6">
+                        {/* Author Information */}
+                        <div>
+                            <Typography variant="h6" color="blue-gray" className="mb-4">
+                                Author Information
+                            </Typography>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <Input
                                     type="text"
-                                    name="membername"
-                                    id="membername"
-                                    placeholder="Enter Member Name"
-                                    className="w-full rounded-md border border-gray-300 bg-white py-3 px-6 text-base font-medium text-black outline-none focus:border-black focus:shadow-md"
+                                    label="Full Name"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleInputChange}
+                                    className="!border-gray-200 focus:!border-orange-500"
+                                />
+                                <Input
+                                    type="email"
+                                    label="Email Address"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleInputChange}
+                                    className="!border-gray-200 focus:!border-orange-500"
                                 />
                             </div>
-                            <div className="w-full px-3 sm:flex-1 mb-5">
-                                <input
+                        </div>
+
+                        {/* Co-Authors */}
+                        <div>
+                            <Typography variant="h6" color="blue-gray" className="mb-4">
+                                Co-Authors
+                            </Typography>
+                            {members.length > 0 && (
+                                <div className="mb-4 space-y-2">
+                                    {members.map((member, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                                        >
+                                            <div>
+                                                <Typography variant="small" className="font-medium">
+                                                    {member.name}
+                                                </Typography>
+                                                <Typography variant="small" className="text-gray-600">
+                                                    {member.email}
+                                                </Typography>
+                                            </div>
+                                            <Button
+                                                variant="text"
+                                                color="red"
+                                                onClick={() => removeMember(index)}
+                                                className="p-2"
+                                            >
+                                                <TrashIcon className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                                <Input
                                     type="text"
-                                    name="memberemail"
-                                    id="memberemail"
-                                    placeholder="Enter Member Email"
-                                    className="w-full rounded-md border border-gray-300 bg-white py-3 px-6 text-base font-medium text-black outline-none focus:border-black focus:shadow-md"
+                                    label="Co-Author Name"
+                                    name="name"
+                                    value={memberInput.name}
+                                    onChange={handleMemberInputChange}
+                                    className="!border-gray-200 focus:!border-orange-500"
                                 />
-                            </div>
-                            <div className="w-full px-3 sm:w-auto mb-5">
-                                <Button onClick={() => {
-                                    const memberName = document.getElementById('membername').value;
-                                    const memberEmail = document.getElementById('memberemail').value;
-                                    setMembers([...members, { name: memberName, email: memberEmail }]);
-                                    document.getElementById('membername').value = '';
-                                    document.getElementById('memberemail').value = '';
-                                }}>
-                                    <PlusIcon className='h-5 w-5' />
+                                <Input
+                                    type="email"
+                                    label="Co-Author Email"
+                                    name="email"
+                                    value={memberInput.email}
+                                    onChange={handleMemberInputChange}
+                                    className="!border-gray-200 focus:!border-orange-500"
+                                />
+                                <Button
+                                    variant="text"
+                                    color="orange"
+                                    className="flex items-center gap-2"
+                                    onClick={addMember}
+                                >
+                                    <PlusIcon className="h-4 w-4" />
+                                    Add Co-Author
                                 </Button>
                             </div>
                         </div>
-                    </div>
 
-                    {/* track */}
-                    <div className="mb-5">
-                        <label
-                            htmlFor="track"
-                            className="mb-3 block text-base font-medium text-black"
-                        >
-                            Track Applying For
-                        </label>
-                        <select
-                            name="track"
-                            id="track"
-                            className="w-full rounded-md border border-gray-300 bg-white py-3 px-6 text-base font-medium text-black outline-none focus:border-black focus:shadow-md"
-                            value={selectedTrack}
-                            onChange={(event) => { setSelectedTrack(event.target.value) }}
-                        >
-                            <option value="">Select a track</option>
-                            <option value="1-innovative-product-design">Innovative Product Design</option>
-                            <option value="2-intelligent-manufacturing-systems">Intelligent Manufacturing Systems</option>
-                        </select>
-                    </div>
+                        {/* Track Selection */}
+                        <div>
+                            <Typography variant="h6" color="blue-gray" className="mb-4">
+                                Research Track
+                            </Typography>
+                            <Select
+                                label="Select Track"
+                                value={formData.track}
+                                onChange={(value) => handleInputChange({ target: { name: 'track', value } })}
+                                className="!border-gray-200 focus:!border-orange-500"
+                            >
+                                {TRACKS.map((track) => (
+                                    <Option key={track.value} value={track.value}>
+                                        {track.label}
+                                    </Option>
+                                ))}
+                            </Select>
+                            {formData.track && (
+                                <Typography variant="small" className="mt-2 text-gray-600">
+                                    {TRACKS.find(t => t.value === formData.track)?.description}
+                                </Typography>
+                            )}
+                        </div>
 
-                    {/* paper */}
-                    <div className="mb-5 pt-3">
-                        <label
-                            htmlFor="email"
-                            className="mb-5 block text-base font-semibold text-black sm:text-xl"
-                        >
-                            Add Paper
-                        </label>
-                        <input onChange={handleFileChange} type="file" name="file" id="file" className="sr-only" />
-                        <label htmlFor="file"
-                            className="relative flex min-h-[200px] items-center justify-center rounded-md border border-dashed border-[#e0e0e0] p-12 text-center">
-                            <div>
-                                <span className="mb-2 block text-xl font-semibold text-[#07074D]">
-                                    Drop files here
-                                </span>
-                                <span className="mb-2 block text-base font-medium text-[#6B7280]">
-                                    Or
-                                </span>
-                                <span
-                                    className="inline-flex rounded border border-[#e0e0e0] py-2 px-7 text-base font-medium text-[#07074D]">
-                                    {file ? file.name : 'Choose a file'}
-                                </span>
-                            </div>
-                        </label>
-                    </div>
+                        {/* Paper Upload */}
+                        <div>
+                            <Typography variant="h6" color="blue-gray" className="mb-4">
+                                Paper Upload
+                            </Typography>
+                            <Card className="border border-dashed border-gray-300 hover:border-orange-500 transition-colors">
+                                <CardBody className="flex flex-col items-center justify-center p-8 text-center">
+                                    <DocumentArrowUpIcon className="h-12 w-12 text-gray-400 mb-4" />
+                                    <Typography variant="h6" color="blue-gray" className="mb-2">
+                                        {formData.file ? formData.file.name : 'Drop your paper here or click to browse'}
+                                    </Typography>
+                                    <Typography variant="small" className="text-gray-600 mb-4">
+                                        PDF format only, max 10MB
+                                    </Typography>
+                                    <input
+                                        type="file"
+                                        accept=".pdf"
+                                        onChange={handleFileChange}
+                                        className="hidden"
+                                        id="paper-upload"
+                                    />
+                                    <Button
+                                        variant="text"
+                                        color="orange"
+                                        className="flex items-center gap-2"
+                                        onClick={() => document.getElementById('paper-upload').click()}
+                                    >
+                                        Choose File
+                                        <PlusIcon className="h-4 w-4" />
+                                    </Button>
+                                </CardBody>
+                            </Card>
+                        </div>
 
-
-                    <div>
-                        {/* <Button type='submit' className="hover:shadow-form w-full rounded-md bg-black py-3 px-8 text-center text-base font-semibold text-white outline-none">
-                            Add Submission
-                        </Button> */}
-
+                        {/* Submit Button */}
                         <Button
-                            className='hover:shadow-form w-full rounded-md bg-black py-3 px-8 text-center text-base font-semibold text-white outline-none'
-                            onClick={handleOpen}
+                            color="orange"
+                            className="w-full"
+                            onClick={() => setOpen(true)}
+                            disabled={isSubmitting}
                         >
-                            Add Submission
+                            {isSubmitting ? 'Submitting...' : 'Submit Paper'}
                         </Button>
-                        <ConfirmationModal
-                            open={open}
-                            handleOpen={handleOpen}
-                            titleOfModal='Add Submission'
-                            message='Are you sure you want to add this submission?'
-                            actionOnConfirm={handleSubmit}
-                        />
-                    </div>
-                </form>
+                    </form>
+                </CardBody>
+            </Card>
 
-
-            </div>
-            {error && <p>Error: {error}</p>}
-        </>
-    )
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                open={open}
+                handleOpen={() => setOpen(!open)}
+                titleOfModal="Confirm Submission"
+                message="Are you sure you want to submit your paper? Please ensure all information is correct before proceeding."
+                actionOnConfirm={handleSubmit}
+            />
+        </div>
+    );
 }
 
-export default AddNewSubmissionForm
+export default AddNewSubmissionForm;
 
 
 

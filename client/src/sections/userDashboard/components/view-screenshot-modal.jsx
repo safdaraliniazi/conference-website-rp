@@ -1,5 +1,6 @@
 import { Button, Dialog, DialogBody, DialogFooter, DialogHeader } from '@material-tailwind/react'
 import React, { useEffect, useState } from 'react'
+import API_BASE_URL from "../../../config/api";
 
 function ViewScreenshotModal({ image, submissionId }) {
     const [open, setOpen] = React.useState(false);
@@ -9,7 +10,7 @@ function ViewScreenshotModal({ image, submissionId }) {
     // function to handle fetch image
     useEffect(() => {
         const token = localStorage.getItem('token');
-        const url = `https://conference-website-rp.onrender.com/api/users/view-submission-screenshot/${image}`;
+        const url = `${API_BASE_URL}/api/users/view-submission-screenshot/${image}`;
 
         fetch(url, {
             method: 'POST',

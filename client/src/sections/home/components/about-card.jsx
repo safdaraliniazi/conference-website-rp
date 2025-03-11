@@ -1,30 +1,40 @@
-import {
-  Card,
-  CardBody,
-  Typography,
-} from "@material-tailwind/react";
+import { Typography } from "@material-tailwind/react";
+import { BuildingOfficeIcon } from "@heroicons/react/24/solid";
 
-
-export function AboutCard({ title='', description='', subTitle='' }) {
+export function AboutCard({ title, description }) {
   return (
-    <Card shadow={false}>
-      <CardBody className="h-full p-5 flex flex-col items-center rounded-2xl bg-gray-900 opacity-0.5 ">
-        <Typography variant="h6" className="mb-4 text-center" color="white">
-          {subTitle}
-        </Typography>
-        <Typography variant="h4" className="text-center" color="white">
+    <div className="relative h-full bg-white rounded-xl shadow-md overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-white opacity-50" />
+
+      {/* Content */}
+      <div className="relative p-8">
+        {/* Icon */}
+        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 mb-6">
+          <BuildingOfficeIcon className="h-6 w-6 text-orange-500" />
+        </div>
+
+        {/* Title */}
+        <Typography
+          variant="h5"
+          className="text-gray-900 font-bold mb-4"
+        >
           {title}
         </Typography>
+
+        {/* Description */}
         <Typography
-          color="white"
-          className="mt-2 mb-10 text-base w-full lg:w-10/12 text-justify font-normal"
+          variant="paragraph"
+          className="text-gray-600 leading-relaxed"
         >
           {description}
         </Typography>
-      </CardBody>
-    </Card>
+      </div>
+
+      {/* Decorative Elements */}
+      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-orange-300" />
+    </div>
   );
 }
-
 
 export default AboutCard;

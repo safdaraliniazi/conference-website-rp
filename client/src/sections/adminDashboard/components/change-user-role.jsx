@@ -2,6 +2,7 @@ import { Select, Option } from '@material-tailwind/react';
 import React, { useState } from 'react';
 import axios from 'axios';
 import { ConfirmationModal } from '../../../components/confirmation-modal';
+import API_BASE_URL from "../../../config/api";
 
 
 const ChangeUserRole = ({ role, email }) => {
@@ -16,7 +17,7 @@ const ChangeUserRole = ({ role, email }) => {
         setSelectedRole(newRole);
 
         try {
-            await axios.post(`https://conference-website-rp.onrender.com/api/admin/change-user-role`,
+            await axios.post(`${API_BASE_URL}/api/admin/change-user-role`,
                 { email, role: newRole },
                 {
                     headers: {

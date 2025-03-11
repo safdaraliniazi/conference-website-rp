@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Button } from '@material-tailwind/react';
+import API_BASE_URL from "../../../config/api";
 
 function AddNewAnnouncementForm() {
     const [title, setTitle] = useState('');
@@ -11,7 +12,7 @@ function AddNewAnnouncementForm() {
         event.preventDefault();
 
         try {
-            await axios.post('https://conference-website-rp.onrender.com/api/admin/add-new-announcement',
+            await axios.post(`${API_BASE_URL}/api/admin/add-new-announcement`,
                 { title, description, date },
                 {
                     headers: {

@@ -1,5 +1,6 @@
 import { Button, Dialog, DialogBody, DialogFooter, DialogHeader } from '@material-tailwind/react'
 import React, { useState } from 'react'
+import API_BASE_URL from "../../../config/api";
 
 function UpdatePaymentDetails({ submissionId }) {
     const [open, setOpen] = React.useState(false);
@@ -40,7 +41,7 @@ function UpdatePaymentDetails({ submissionId }) {
         formData.append('submissionId', submissionId);
 
         try {
-            const response = await fetch('https://conference-website-rp.onrender.com/api/users/register-now', {
+            const response = await fetch(`${API_BASE_URL}/api/users/register-now`, {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -68,7 +69,7 @@ function UpdatePaymentDetails({ submissionId }) {
     return (
         <>
             <span onClick={handleOpen} className='cursor-pointer hover:underline'>
-            Update Payment Details
+                Update Payment Details
             </span>
             <Dialog size='xs' open={open} handler={handleOpen} className='p-5 w-auto'>
                 <DialogHeader>Update Payment Details</DialogHeader>

@@ -1,5 +1,6 @@
 import { Button, Dialog, DialogBody, DialogFooter, DialogHeader } from '@material-tailwind/react'
 import React, { useEffect, useState } from 'react'
+import API_BASE_URL from "../../../config/api";
 
 function AcceptOrRejectSubmissionModal({ image, submissionId }) {
     const [open, setOpen] = React.useState(false);
@@ -9,7 +10,7 @@ function AcceptOrRejectSubmissionModal({ image, submissionId }) {
     // function to handle fetch image
     useEffect(() => {
         const token = localStorage.getItem('token');
-        const url = `https://conference-website-rp.onrender.com/api/users/view-submission-screenshot/${image}`;
+        const url = `${API_BASE_URL}/api/users/view-submission-screenshot/${image}`;
 
         fetch(url, {
             method: 'POST',
@@ -41,7 +42,7 @@ function AcceptOrRejectSubmissionModal({ image, submissionId }) {
 
     const handleAccept = () => {
         const token = localStorage.getItem('token');
-        const url = 'https://conference-website-rp.onrender.com/api/admin/register-submission-accept';
+        const url = `${API_BASE_URL}/api/admin/register-submission-accept`;
 
         fetch(url, {
             method: 'POST',
@@ -69,7 +70,7 @@ function AcceptOrRejectSubmissionModal({ image, submissionId }) {
 
     const handleReject = () => {
         const token = localStorage.getItem('token');
-        const url = 'https://conference-website-rp.onrender.com/api/admin/register-submission-reject';
+        const url = `${API_BASE_URL}/api/admin/register-submission-reject`;
 
         fetch(url, {
             method: 'POST',
@@ -118,7 +119,7 @@ function AcceptOrRejectSubmissionModal({ image, submissionId }) {
                     >
                         <span>Close</span>
                     </Button>
-                    
+
                     <div>
                         <Button
                             variant="text"

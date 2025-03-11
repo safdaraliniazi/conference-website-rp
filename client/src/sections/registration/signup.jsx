@@ -5,6 +5,7 @@ import axios from 'axios';
 import { UserContext } from '../../UserContext';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
+import API_BASE_URL from "../../config/api";
 
 function SignUp() {
     const navigate = useNavigate();
@@ -49,7 +50,7 @@ function SignUp() {
             return;
         }
         try {
-            await axios.post('https://conference-website-rp.onrender.com/api/users/register', { fullName, password, email });
+            await axios.post(`${API_BASE_URL}/api/users/register`, { fullName, password, email });
             setOtpSent(true); // OTP sent, waiting for verification
         } catch (error) {
             console.error(error);
@@ -59,7 +60,7 @@ function SignUp() {
     const handleOtpSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('https://conference-website-rp.onrender.com/api/users/verify-otp', { email, otp })
+            const response = await axios.post(`${API_BASE_URL}/api/users/verify-otp`, { email, otp })
                 .then((response) => {
                     localStorage.setItem('token', response.data.token);
                     const decodedToken = jwtDecode(response.data.token)
@@ -84,7 +85,7 @@ function SignUp() {
 
             {!otpSent ? (
                 <form onSubmit={handleSubmit} className="mx-auto max-w-[24rem] text-left">
-                    
+
                     <div className="mb-6">
                         <label htmlFor="fullName">
                             <Typography variant="small" className="mb-2 block font-medium text-gray-900">
@@ -104,7 +105,7 @@ function SignUp() {
                         />
                         {errors.fullName && <Typography color="red" variant="small">{errors.fullName}</Typography>}
                     </div>
-                    
+
                     <div className="mb-6">
                         <label htmlFor="email">
                             <Typography variant="small" className="mb-2 block font-medium text-gray-900">
@@ -124,7 +125,7 @@ function SignUp() {
                         />
                         {errors.email && <Typography color="red" variant="small">{errors.email}</Typography>}
                     </div>
-                    
+
                     <div className="mb-6">
                         <label htmlFor="password">
                             <Typography variant="small" className="mb-2 block font-medium text-gray-900">
@@ -176,7 +177,7 @@ function SignUp() {
                         />
                         {errors.confirmPassword && <Typography color="red" variant="small">{errors.confirmPassword}</Typography>}
                     </div>
-                    
+
                     <Button type="submit" color="gray" size="lg" className="mt-6" fullWidth>
                         Sign up
                     </Button>
@@ -206,7 +207,7 @@ function SignUp() {
                     </Button>
                 </form>
             )}
-            
+
         </div>
     );
 }

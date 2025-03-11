@@ -1,5 +1,6 @@
 import { Button, Dialog, DialogBody, DialogFooter, DialogHeader } from '@material-tailwind/react'
 import React, { useState } from 'react'
+import API_BASE_URL from "../../../config/api";
 
 function ReviewModal({ review, submissionId }) {
     const [open, setOpen] = React.useState(false);
@@ -20,7 +21,7 @@ function ReviewModal({ review, submissionId }) {
         formData.append('submissionId', submissionId);
 
         try {
-            const response = await fetch('https://conference-website-rp.onrender.com/api/users/submit-revision', {
+            const response = await fetch(`${API_BASE_URL}/api/users/submit-revision`, {
                 method: 'POST',
                 body: formData,
                 headers: {

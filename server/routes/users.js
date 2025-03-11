@@ -122,6 +122,7 @@ router.post('/login', async (req, res) => {
 router.post('/add-new-submission', verifyToken, upload.single('file'), async (req, res) => {
     const { filename } = req.file;
     const { name, email, members, track } = req.body;
+    // console.log(req.body)
 
     const submission = new Submission({
         filename,

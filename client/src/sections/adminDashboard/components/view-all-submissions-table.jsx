@@ -4,6 +4,7 @@ import { MagnifyingGlassIcon, PencilIcon, UserPlusIcon } from '@heroicons/react/
 import ReviewerSelect from './reviewerSelect';
 import AcceptOrRejectSubmissionModal from './accept-or-reject-submission-modal';
 import * as XLSX from 'xlsx';
+import API_BASE_URL from "../../../config/api";
 
 
 function ViewAllSubmissionsTable() {
@@ -46,7 +47,7 @@ function ViewAllSubmissionsTable() {
         // Fetch the list of files from the server with Authorization header
         const fetchFiles = async () => {
             try {
-                const response = await fetch('https://conference-website-rp.onrender.com/api/admin/view-all-user-submissions', {
+                const response = await fetch(`${API_BASE_URL}/api/admin/view-all-user-submissions`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -73,7 +74,7 @@ function ViewAllSubmissionsTable() {
         const fetchUsers = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch('https://conference-website-rp.onrender.com/api/admin/all-reviewers', {
+                const response = await fetch(`${API_BASE_URL}/api/admin/all-reviewers`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -116,7 +117,7 @@ function ViewAllSubmissionsTable() {
     const handleFileClick = (filename) => {
         // Open the file in a new tab with Authorization header
         const token = localStorage.getItem('token');
-        const url = `https://conference-website-rp.onrender.com/api/admin/view-all-user-submissions/${filename}`;
+        const url = `${API_BASE_URL}/api/admin/view-all-user-submissions/${filename}`;
 
         fetch(url, {
             headers: {

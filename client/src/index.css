@@ -6,26 +6,11 @@
 	padding: 0;
 	margin: 0;
 	box-sizing: border-box;
-	font-family: serif, Roboto,
+	font-family: serif, Roboto;
 }
 
 body {
 	padding: 0;
 }
-.heroContainer {
-	background-image: url("../public/images/bg.png");
-	background-repeat: no-repeat;
-	background-position: left;
-	background-size: contain;
-	object-fit: cover;
-}
-.footer {
-	background-image: url("../public/images/footerBg.svg");
-	background-repeat: no-repeat;
-	background-size: cover;
-}
-#hero-bg{
-	background-image: url("../public/images/event.jpg");
-	background-repeat: no-repeat;
-	background-size: cover;
-}
+
+/* Remove background image styles as we're using image elements directly */

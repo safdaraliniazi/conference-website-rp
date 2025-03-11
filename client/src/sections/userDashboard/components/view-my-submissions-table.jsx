@@ -5,6 +5,7 @@ import ReviewModal from './review-modal';
 import RegisterModal from './register-modal';
 import ViewScreenshotModal from './view-screenshot-modal';
 import UpdatePaymentDetails from './update-payment-details';
+import API_BASE_URL from "../../../config/api";
 
 
 function ViewMySubmissionsTable() {
@@ -15,7 +16,7 @@ function ViewMySubmissionsTable() {
         // Fetch the list of files from the server with Authorization header
         const fetchFiles = async () => {
             try {
-                const response = await fetch('https://conference-website-rp.onrender.com/api/users/view-my-submissions', {
+                const response = await fetch(`${API_BASE_URL}/api/users/view-my-submissions`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -42,7 +43,7 @@ function ViewMySubmissionsTable() {
     const handleFileClick = (filename) => {
         // Open the file in a new tab with Authorization header
         const token = localStorage.getItem('token');
-        const url = `https://conference-website-rp.onrender.com/api/users/view-my-submissions/${filename}`;
+        const url = `${API_BASE_URL}/api/users/view-my-submissions/${filename}`;
 
         fetch(url, {
             method: 'POST',

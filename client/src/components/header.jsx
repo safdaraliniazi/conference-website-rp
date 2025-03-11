@@ -6,7 +6,6 @@ import { UserContext } from "../UserContext";
 import UserAvatar from "./useravatar";
 import NavItem from "./navitem";
 
-
 const NAV_MENU = [
   {
     name: "Home",
@@ -43,7 +42,7 @@ const NAV_MENU = [
 export function Header({ page = 'nothome' }) {
   const [open, setOpen] = React.useState(false);
   const [isScrolling, setIsScrolling] = React.useState(false);
-  const { user, logout } = useContext(UserContext); // Access user context
+  const { user, logout } = useContext(UserContext);
   const closeDrawer = () => setOpen(false);
 
   const handleOpen = () => setOpen((cur) => !cur);
@@ -65,7 +64,6 @@ export function Header({ page = 'nothome' }) {
     }
 
     window.addEventListener("scroll", handleScroll);
-
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -75,49 +73,56 @@ export function Header({ page = 'nothome' }) {
       fullWidth
       blurred={false}
       color="transparent"
-      className={`fixed top-0 z-50 border-0 ${isScrolling ? 'bg-[#ffffff40] backdrop-blur-md border-b-[1px] border-[#0000000d]' : ''}`}
+      className={`fixed top-0 z-50 border-0 transition-all duration-300 ${isScrolling
+        ? 'bg-orange-900/95 backdrop-blur-md shadow-lg'
+        : page === 'home'
+          ? 'bg-transparent'
+          : 'bg-orange-900/95 backdrop-blur-md'
+        }`}
     >
-      <div className={`container mx-auto flex items-center justify-between ${(isScrolling || page !== 'home') ? "text-black" : "text-white"}`}>
-        <img
-          alt="ipdims logo"
-          src="/logos/ipdims.png"
-          className="h-10"
-        />
-        <ul
-          className={`hidden items-center gap-8 lg:flex`}
-        >
+      <div className="container mx-auto flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <img
+            alt="ipdims logo"
+            src="/logos/ipdims.png"
+            className="h-12 transition-all duration-300"
+          />
+          <img
+            alt="nitr logo"
+            src="/logos/nit_rourkela.png"
+            className="h-12 transition-all duration-300"
+          />
+        </div>
+
+        <ul className="hidden items-center gap-8 lg:flex">
           {NAV_MENU.map(({ name, icon: Icon, href }) => (
-            <NavItem key={name} href={href}>
+            <NavItem
+              key={name}
+              href={href}
+              className="text-white hover:text-orange-300 transition-colors duration-300"
+            >
               <Icon className="h-4 w-4" />
               <span>{name}</span>
             </NavItem>
           ))}
-          {/* Conditionally render the registration or user email */}
           {user ? (
             <UserAvatar />
           ) : (
-            <NavItem href="/registration">
+            <NavItem
+              href="/registration"
+              className="text-white hover:text-orange-300 transition-colors duration-300"
+            >
               <UserCircleIcon className="h-4 w-4" />
               <span>Registration</span>
             </NavItem>
           )}
         </ul>
-        <div className="hidden items-center gap-4 lg:flex">
-          <img
-            alt="nitr logo"
-            src="/logos/nit_rourkela.png"
-            className="h-10"
-          />
-        </div>
 
-
-
-        {/* side bard for mobile */}
         <IconButton
           variant="text"
-          color={isScrolling ? "gray" : "white"}
+          color="white"
           onClick={handleOpen}
-          className="ml-auto inline-block lg:hidden"
+          className="ml-auto inline-block lg:hidden hover:bg-orange-800/50"
         >
           {open ? (
             <XMarkIcon strokeWidth={2} className="h-6 w-6" />
@@ -125,62 +130,66 @@ export function Header({ page = 'nothome' }) {
             <Bars3Icon strokeWidth={2} className="h-6 w-6" />
           )}
         </IconButton>
-        <Drawer open={open} onClose={closeDrawer} placement="right">
-          <div className="mb-2 flex items-center justify-between p-4">
-            <Typography variant="h5" color="blue-gray">
-              Material Tailwind
+
+        <Drawer
+          open={open}
+          onClose={closeDrawer}
+          placement="right"
+          className="bg-orange-900"
+        >
+          <div className="mb-2 flex items-center justify-between p-4 border-b border-orange-800">
+            <Typography variant="h5" className="font-bold text-white">
+              Menu
             </Typography>
-            <IconButton variant="text" color="blue-gray" onClick={closeDrawer}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2}
-                stroke="currentColor"
-                className="h-5 w-5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+            <IconButton variant="text" color="white" onClick={closeDrawer} className="hover:bg-orange-800/50">
+              <XMarkIcon className="h-5 w-5" />
             </IconButton>
           </div>
-          <List>
+          <List className="p-4">
             {NAV_MENU.map(({ name, icon: Icon, href }) => (
-              <ListItem key={name} onClick={closeDrawer}>
+              <ListItem
+                key={name}
+                onClick={closeDrawer}
+                className="hover:bg-orange-800/50 focus:bg-orange-800/50"
+              >
                 <ListItemPrefix>
-                  <Icon className="h-5 w-5" />
+                  <Icon className="h-5 w-5 text-orange-300" />
                 </ListItemPrefix>
-                {name}
+                <a href={href} className="text-white hover:text-orange-300">
+                  {name}
+                </a>
               </ListItem>
             ))}
-            {/* Conditionally render the registration or user email */}
             {user ? (
-              <ListItem onClick={closeDrawer}>
+              <ListItem className="hover:bg-orange-800/50 focus:bg-orange-800/50">
                 <ListItemPrefix>
-                  <UserCircleIcon className="h-5 w-5" />
+                  <UserCircleIcon className="h-5 w-5 text-orange-300" />
                 </ListItemPrefix>
-                {user.fullName}
-                <ListItemSuffix>
-                  <Button onClick={logout} size="sm" color="red">
+                <div className="flex items-center justify-between w-full">
+                  <span className="text-white">{user.fullName}</span>
+                  <Button
+                    onClick={logout}
+                    size="sm"
+                    className="ml-4 bg-red-500 hover:bg-red-600 text-white"
+                  >
                     Logout
                   </Button>
-                </ListItemSuffix>
+                </div>
               </ListItem>
             ) : (
-              <ListItem onClick={closeDrawer}>
+              <ListItem
+                onClick={closeDrawer}
+                className="hover:bg-orange-800/50 focus:bg-orange-800/50"
+              >
                 <ListItemPrefix>
-                  <UserCircleIcon className="h-5 w-5" />
+                  <UserCircleIcon className="h-5 w-5 text-orange-300" />
                 </ListItemPrefix>
-                Registration
+                <a href="/registration" className="text-white hover:text-orange-300">
+                  Registration
+                </a>
               </ListItem>
             )}
           </List>
-          <Button className="mt-3 ml-5" size="sm">
-            Documentation
-          </Button>
         </Drawer>
       </div>
     </Navbar>

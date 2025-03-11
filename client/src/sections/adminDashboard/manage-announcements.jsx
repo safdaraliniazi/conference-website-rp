@@ -1,9 +1,9 @@
-
 import React, { useEffect, useState } from 'react';
 import PageWrapper from '../../components/page-wrapper';
 import OptionsHeader from '../../components/options-header';
 import { AnnouncementTable } from './components/announcements-table';
 import AddNewAnnouncementForm from './components/add-new-announcement-form';
+import API_BASE_URL from "../../config/api";
 
 
 function ManageAnnouncements() {
@@ -13,7 +13,7 @@ function ManageAnnouncements() {
     const fetchUsers = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch('https://conference-website-rp.onrender.com/api/general/get-all-announcements', {
+        const response = await fetch(`${API_BASE_URL}/api/general/get-all-announcements`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
