@@ -275,6 +275,41 @@ router.put('/edit-announcement/:id', verifyAdmin, async (req, res) => {
     }
 });
 
+// toggle announcement status
+router.put('/toggle-announcement-status/:id', verifyAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ error: 'Invalid announcement ID' });
+    }
+
+    try {
+        const announcement = await Announcement.findById(id);
+
+        if (!announcement) {
+            return res.status(404).json({ error: 'Announcement not found' });
+        }
+
+        // If status is being set to archived, set date to yesterday
+        // If status is being set to active, set date to tomorrow
+        const newDate = status === 'archived'
+            ? new Date(Date.now() - 86400000) // Yesterday
+            : new Date(Date.now() + 86400000); // Tomorrow
+
+        const updatedAnnouncement = await Announcement.findByIdAndUpdate(
+            id,
+            { date: newDate },
+            { new: true, runValidators: true }
+        );
+
+        res.status(200).json(updatedAnnouncement);
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Failed to toggle announcement status' });
+    }
+});
+
 // delete announcement
 router.delete('/delete-announcement/:id', verifyAdmin, async (req, res) => {
     const { id } = req.params;

@@ -126,6 +126,37 @@ function ManageAnnouncements() {
     }
   };
 
+  const handleToggleStatus = async (announcementId, newStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/admin/toggle-announcement-status/${announcementId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (response.ok) {
+        const updatedAnnouncement = await response.json();
+        setAllAnnouncements(prev =>
+          prev.map(a => a._id === announcementId ? updatedAnnouncement : a)
+        );
+        setAlertMessage(`Announcement ${newStatus === 'archived' ? 'archived' : 'activated'} successfully!`);
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 3000);
+        return true;
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Failed to ${newStatus} announcement`);
+      }
+    } catch (error) {
+      setError(`Error updating announcement status: ${error.message}`);
+      return false;
+    }
+  };
+
   return (
     <PageWrapper>
       <div className="relative">
@@ -166,6 +197,7 @@ function ManageAnnouncements() {
             onAddAnnouncement={handleAddAnnouncement}
             onEditAnnouncement={handleEditAnnouncement}
             onDeleteAnnouncement={handleDeleteAnnouncement}
+            onToggleStatus={handleToggleStatus}
           />
         )}
       </div>

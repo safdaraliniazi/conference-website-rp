@@ -28,7 +28,7 @@ import {
     PlusIcon,
 } from "@heroicons/react/24/solid";
 
-export function AnnouncementTable({ allAnnouncements, onAddAnnouncement, onEditAnnouncement, onDeleteAnnouncement }) {
+export function AnnouncementTable({ allAnnouncements, onAddAnnouncement, onEditAnnouncement, onDeleteAnnouncement, onToggleStatus }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('all');
     const [openDialog, setOpenDialog] = useState(false);
@@ -141,6 +141,12 @@ export function AnnouncementTable({ allAnnouncements, onAddAnnouncement, onEditA
         }
     };
 
+    const handleStatusToggle = async (announcement) => {
+        const isCurrentlyActive = new Date(announcement.date) > new Date();
+        const newStatus = isCurrentlyActive ? 'archived' : 'active';
+        await onToggleStatus(announcement._id, newStatus);
+    };
+
     return (
         <div className="relative">
             <Card className="h-full w-full overflow-hidden">
@@ -225,6 +231,7 @@ export function AnnouncementTable({ allAnnouncements, onAddAnnouncement, onEditA
                                     const classes = isLast
                                         ? "p-4"
                                         : "p-4 border-b border-blue-gray-50";
+                                    const isActive = new Date(announcement.date) > new Date();
 
                                     return (
                                         <tr key={announcement._id} className="hover:bg-orange-50/50 transition-colors">
@@ -265,17 +272,19 @@ export function AnnouncementTable({ allAnnouncements, onAddAnnouncement, onEditA
                                                         variant="ghost"
                                                         value={
                                                             <div className="flex items-center gap-2">
-                                                                {new Date(announcement.date) > new Date() ? (
+                                                                {isActive ? (
                                                                     <BellAlertIcon className="h-4 w-4" />
                                                                 ) : (
                                                                     <BellSlashIcon className="h-4 w-4" />
                                                                 )}
                                                                 <span>
-                                                                    {new Date(announcement.date) > new Date() ? 'Active' : 'Archived'}
+                                                                    {isActive ? 'Active' : 'Archived'}
                                                                 </span>
                                                             </div>
                                                         }
                                                         color={getStatusColor(announcement.date)}
+                                                        onClick={() => handleStatusToggle(announcement)}
+                                                        className="cursor-pointer hover:bg-blue-gray-50"
                                                     />
                                                 </div>
                                             </td>
