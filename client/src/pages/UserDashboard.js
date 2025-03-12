@@ -81,10 +81,10 @@ function UserDashboard() {
                         </span>
                         <div>
                             <Typography variant="h5" color="blue-gray" className="mb-1">
-                                {user?.name || 'Author'}
+                                {user?.fullName}
                             </Typography>
                             <Typography variant="small" className="font-normal text-gray-600">
-                                {user?.email || 'author@example.com'}
+                                {user?.email}
                             </Typography>
                         </div>
                     </div>
