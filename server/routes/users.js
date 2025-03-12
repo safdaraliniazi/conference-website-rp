@@ -122,7 +122,6 @@ router.post('/login', async (req, res) => {
 router.post('/add-new-submission', verifyToken, upload.single('file'), async (req, res) => {
     const { filename } = req.file;
     const { name, email, members, track } = req.body;
-    // console.log(req.body)
 
     const submission = new Submission({
         filename,
@@ -134,18 +133,32 @@ router.post('/add-new-submission', verifyToken, upload.single('file'), async (re
     });
 
     try {
+        // First save the submission
         await submission.save();
 
-        // send email to admin for new submission added
-        await sendToAdminsNewSubmission(submission)
+        // Then try to send emails, but don't let email failures affect the submission
+        try {
+            // send email to admin for new submission added
+            await sendToAdminsNewSubmission(submission);
+            // send email to members of team for new submission added
+            await sendToMembersNewSubmission(submission);
+        } catch (emailError) {
+            console.error('Error sending notification emails:', emailError);
+            // Continue with the success response even if emails fail
+        }
 
-        // send email to members of team for new submission added
-        await sendToMembersNewSubmission(submission)
-
-        res.status(201).json({ message: 'File uploaded successfully', submission });
+        res.status(201).json({
+            success: true,
+            message: 'Submission successful',
+            submission
+        });
     } catch (err) {
-        console.log(err)
-        res.status(500).json({ message: 'Server error.', error: err.message });
+        console.error('Error saving submission:', err);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to save submission',
+            error: err.message
+        });
     }
 });
 

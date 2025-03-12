@@ -69,10 +69,8 @@ export function AnnouncementsCard() {
             No active announcements at this time.
           </Typography>
         ) : (
-          <Typography
-            color="white"
-            className="mt-2 mb-10 text-base w-full lg:w-10/12 text-justify font-normal"
-          >
+          // ✅ FIX: Replace <Typography> wrapper with <div> to avoid <p> inside <p> issue
+          <div className="mt-2 mb-10 text-base w-full lg:w-10/12 text-justify font-normal">
             <ul className="space-y-4">
               {announcements.map((announcement) => (
                 <li key={announcement._id} className="border-l-4 border-orange-500 pl-4">
@@ -92,7 +90,7 @@ export function AnnouncementsCard() {
                 </li>
               ))}
             </ul>
-          </Typography>
+          </div>
         )}
       </CardBody>
     </Card>

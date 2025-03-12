@@ -45,7 +45,7 @@ function UserDashboard() {
         } catch (error) {
             logout();
         }
-    }, [isUserValid, logout, navigate]);
+    }, []);
 
     return (
         <PageWrapper>

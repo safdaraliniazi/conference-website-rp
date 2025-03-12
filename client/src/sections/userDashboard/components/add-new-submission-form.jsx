@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Button,
     Card,
@@ -8,6 +9,7 @@ import {
     Select,
     Option,
     Alert,
+    IconButton,
 } from '@material-tailwind/react';
 import {
     PlusIcon,
@@ -16,6 +18,7 @@ import {
     InformationCircleIcon,
     ExclamationCircleIcon,
     CheckCircleIcon,
+    XMarkIcon,
 } from '@heroicons/react/24/solid';
 import { ConfirmationModal } from '../../../components/confirmation-modal';
 import API_BASE_URL from "../../../config/api";
@@ -34,6 +37,7 @@ const TRACKS = [
 ];
 
 function AddNewSubmissionForm() {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -43,7 +47,9 @@ function AddNewSubmissionForm() {
     const [members, setMembers] = useState([]);
     const [memberInput, setMemberInput] = useState({ name: '', email: '' });
     const [error, setError] = useState(null);
+    const [showError, setShowError] = useState(false);
     const [success, setSuccess] = useState(null);
+    const [showSuccess, setShowSuccess] = useState(false);
     const [open, setOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -53,20 +59,36 @@ function AddNewSubmissionForm() {
             ...prev,
             [name]: value
         }));
+        setShowError(false);
         setError(null);
     };
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
-        if (file && !file.name.toLowerCase().endsWith('.pdf')) {
-            setError('Please upload a PDF file');
+
+        // Check if file exists
+        if (!file) return;
+
+        // Check file type
+        if (!file.name.toLowerCase().endsWith('.pdf')) {
+            handleError('Please upload a PDF file');
             return;
         }
+
+        // Check file size (10MB = 10 * 1024 * 1024 bytes)
+        const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+        if (file.size > maxSize) {
+            handleError('File size exceeds 10MB limit. Please upload a smaller file.');
+            e.target.value = ''; // Clear the file input
+            return;
+        }
+
         setFormData(prev => ({
             ...prev,
             file
         }));
         setError(null);
+        setShowError(false);
     };
 
     const handleMemberInputChange = (e) => {
@@ -104,10 +126,20 @@ function AddNewSubmissionForm() {
         return null;
     };
 
+    const handleError = (errorMessage) => {
+        setError(errorMessage);
+        setShowError(true);
+    };
+
+    const handleSuccess = (successMessage) => {
+        setSuccess(successMessage);
+        setShowSuccess(true);
+    };
+
     const handleSubmit = async () => {
         const validationError = validateForm();
         if (validationError) {
-            setError(validationError);
+            handleError(validationError);
             return;
         }
 
@@ -128,17 +160,34 @@ function AddNewSubmissionForm() {
                 }
             });
 
+            const data = await response.json();
+
             if (!response.ok) {
-                throw new Error('Failed to submit paper');
+                throw new Error(data.message || 'Failed to submit paper');
             }
 
-            const data = await response.json();
-            setSuccess('Paper submitted successfully!');
-            setFormData({ name: '', email: '', track: '', file: null });
-            setMembers([]);
-            setOpen(false);
+            // Even if there's an email sending error, the submission was successful
+            if (data.submission) {
+                handleSuccess('Paper submitted successfully! Redirecting to your submissions...');
+                setFormData({ name: '', email: '', track: '', file: null });
+                setMembers([]);
+                setOpen(false);
+
+                // Wait for 3 seconds before redirecting
+                setTimeout(() => {
+                    navigate('/user/dashboard/view-my-submissions');
+                }, 3000);
+            } else {
+                handleError('Failed to process submission. Please try again.');
+            }
         } catch (err) {
-            setError(err.message);
+            console.error('Submission error:', err);
+            // Check if the error is related to email sending
+            if (err.message.includes('No recipients defined')) {
+                handleSuccess('Paper submitted successfully, but there was an issue sending notification emails.');
+            } else {
+                handleError(err.message || 'An error occurred while submitting the paper');
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -181,25 +230,6 @@ function AddNewSubmissionForm() {
             {/* Submission Form */}
             <Card className="lg:col-span-2">
                 <CardBody className="p-6">
-                    {error && (
-                        <Alert
-                            color="red"
-                            icon={<ExclamationCircleIcon className="h-6 w-6" />}
-                            className="mb-6"
-                        >
-                            {error}
-                        </Alert>
-                    )}
-                    {success && (
-                        <Alert
-                            color="green"
-                            icon={<CheckCircleIcon className="h-6 w-6" />}
-                            className="mb-6"
-                        >
-                            {success}
-                        </Alert>
-                    )}
-
                     <form className="space-y-6">
                         {/* Author Information */}
                         <div>
@@ -344,6 +374,48 @@ function AddNewSubmissionForm() {
                                 </CardBody>
                             </Card>
                         </div>
+
+                        {/* Error and Success Alerts */}
+                        {error && showError && (
+                            <Alert
+                                color="red"
+                                icon={<ExclamationCircleIcon className="h-6 w-6" />}
+                                className="mb-4 relative"
+                                action={
+                                    <IconButton
+                                        variant="text"
+                                        color="white"
+                                        size="sm"
+                                        className="!absolute top-2 right-2 hover:!opacity-75"
+                                        onClick={() => setShowError(false)}
+                                    >
+                                        <XMarkIcon className="h-5 w-5" strokeWidth={2} />
+                                    </IconButton>
+                                }
+                            >
+                                {error}
+                            </Alert>
+                        )}
+                        {success && showSuccess && (
+                            <Alert
+                                color="green"
+                                icon={<CheckCircleIcon className="h-6 w-6" />}
+                                className="mb-4 relative"
+                                action={
+                                    <IconButton
+                                        variant="text"
+                                        color="white"
+                                        size="sm"
+                                        className="!absolute top-2 right-2 hover:!opacity-75"
+                                        onClick={() => setShowSuccess(false)}
+                                    >
+                                        <XMarkIcon className="h-5 w-5" strokeWidth={2} />
+                                    </IconButton>
+                                }
+                            >
+                                {success}
+                            </Alert>
+                        )}
 
                         {/* Submit Button */}
                         <Button

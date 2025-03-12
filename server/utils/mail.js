@@ -6,8 +6,11 @@ const User = require('../models/User');
 // get all admins
 const getAllAdminEmails = async () => {
     const admins = await User.find({ role: 'admin' });
-    const adminEmails = admins.map(admin => admin.email).join(',');
-    return adminEmails;
+    if (!admins || admins.length === 0) {
+        // Return a default admin email if no admins are found
+        return process.env.DEFAULT_ADMIN_EMAIL || '';
+    }
+    return admins.map(admin => admin.email).join(',');
 }
 
 
@@ -67,12 +70,17 @@ const sendToUserRoleUpdated = async (user) => {
 
 // 2. mail to all admins: new submission added
 const sendToAdminsNewSubmission = async (submission) => {
-    const allAdminEmails = await getAllAdminEmails();
-    console.log(allAdminEmails, typeof allAdminEmails)
-    await transporter.sendMail({
-        to: allAdminEmails,
-        subject: 'New Submission',
-        html: `
+    try {
+        const allAdminEmails = await getAllAdminEmails();
+        if (!allAdminEmails) {
+            console.log('No admin emails found, skipping admin notification');
+            return;
+        }
+
+        await transporter.sendMail({
+            to: allAdminEmails,
+            subject: 'New Submission',
+            html: `
                 <h4>A new submission has been added. Details are below:</h4>
                 <table border="1" cellPadding="10" cellSpacing="0">
                     <tbody>
@@ -127,18 +135,28 @@ const sendToAdminsNewSubmission = async (submission) => {
                     </tbody>
                 </table>
             `,
-    });
+        });
+    } catch (error) {
+        console.error('Failed to send admin notification:', error);
+        // Don't throw the error, just log it
+    }
 }
+
 
 
 // 3. mail to members: a new submission has been added
 const sendToMembersNewSubmission = async (submission) => {
-    const allMembersEmail = submission.members.map(member => member.email).join(',');
-    console.log(allMembersEmail, typeof allMembersEmail)
-    await transporter.sendMail({
-        to: allMembersEmail,
-        subject: 'New Submission',
-        html: `
+    try {
+        const memberEmails = submission.members.map(member => member.email).filter(email => email);
+        if (memberEmails.length === 0) {
+            console.log('No member emails found, skipping member notification');
+            return;
+        }
+
+        await transporter.sendMail({
+            to: memberEmails.join(','),
+            subject: 'New Submission',
+            html: `
                 <h4>Your team leader has added a new submission. Check details below</h4>
                 <table border="1" cellPadding="10" cellSpacing="0">
                     <tbody>
@@ -193,7 +211,11 @@ const sendToMembersNewSubmission = async (submission) => {
                     </tbody>
                 </table>
             `,
-    });
+        });
+    } catch (error) {
+        console.error('Failed to send member notification:', error);
+        // Don't throw the error, just log it
+    }
 }
 
 

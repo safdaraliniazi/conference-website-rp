@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from "react";
-import { BrowserRouter, Routes, Route, ScrollRestoration } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Contact from "./pages/Contact";
 import Registration from "./pages/Registration";
@@ -22,7 +22,7 @@ import ManageAnnouncements from "./sections/adminDashboard/manage-announcements"
 
 
 function App() {
-	const { user, login, logout, isUserValid } = useContext(UserContext);
+	const { user, logout, isUserValid } = useContext(UserContext);
 
 	useEffect(() => {
 		try {

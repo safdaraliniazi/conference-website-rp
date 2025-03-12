@@ -38,23 +38,19 @@ export function PastEventsCard() {
         <Typography variant="h4" className="text-left mb-5" color="white">
           Past IPDIMS
         </Typography>
-        <Typography
-          color="white"
-          className="mt-2 mb-10 text-base w-full lg:w-10/12 text-justify font-normal"
-        >
-          <ul>
-            {events.map((event) => (
-              <li key={event._id}>
-                <Typography color="white" className="mb-2 flex items-baseline">
-                <span className='text-orange-500'>{event.title + ' ' + event.year }</span> {event.description}
-                  <Link to={event.link}>
-                    <ArrowTopRightOnSquareIcon className='w-4 h-4 ml-2' />
-                  </Link>
-                </Typography>
-              </li>
-            ))}
-          </ul>
-        </Typography>
+
+        {/* Move <ul> outside of <Typography> */}
+        <ul className="mt-2 mb-10 text-base w-full lg:w-10/12 text-justify font-normal text-white">
+          {events.map((event) => (
+            <li key={event._id} className="mb-2 flex items-baseline">
+              <span className='text-orange-500'>{event.title + ' ' + event.year}</span> {event.description}
+              <Link to={event.link}>
+                <ArrowTopRightOnSquareIcon className='w-4 h-4 ml-2' />
+              </Link>
+            </li>
+          ))}
+        </ul>
+
       </CardBody>
     </Card>
   );
