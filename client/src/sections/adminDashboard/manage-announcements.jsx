@@ -70,6 +70,38 @@ function ManageAnnouncements() {
     }
   };
 
+  const handleEditAnnouncement = async (announcementId, updatedAnnouncement) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/admin/edit-announcement/${announcementId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatedAnnouncement)
+      });
+
+      if (response.ok) {
+        // Update the announcements list with the edited announcement
+        const editedAnnouncement = await response.json();
+        setAllAnnouncements(prev =>
+          prev.map(a => a._id === announcementId ? editedAnnouncement : a)
+        );
+        setAlertMessage('Announcement updated successfully!');
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 3000);
+        return true;
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update announcement');
+      }
+    } catch (error) {
+      setError('Error updating announcement: ' + error.message);
+      return false;
+    }
+  };
+
   const handleDeleteAnnouncement = async (announcementId) => {
     try {
       const token = localStorage.getItem('token');
@@ -132,6 +164,7 @@ function ManageAnnouncements() {
           <AnnouncementTable
             allAnnouncements={allAnnouncements}
             onAddAnnouncement={handleAddAnnouncement}
+            onEditAnnouncement={handleEditAnnouncement}
             onDeleteAnnouncement={handleDeleteAnnouncement}
           />
         )}

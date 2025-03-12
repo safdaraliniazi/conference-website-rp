@@ -244,6 +244,37 @@ router.post('/add-new-announcement', verifyAdmin, async (req, res) => {
     }
 });
 
+// edit announcement
+router.put('/edit-announcement/:id', verifyAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { title, description, date } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ error: 'Invalid announcement ID' });
+    }
+
+    if (!title) {
+        return res.status(400).json({ error: 'Title is required' });
+    }
+
+    try {
+        const updatedAnnouncement = await Announcement.findByIdAndUpdate(
+            id,
+            { title, description, date },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedAnnouncement) {
+            return res.status(404).json({ error: 'Announcement not found' });
+        }
+
+        res.status(200).json(updatedAnnouncement);
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Failed to update announcement' });
+    }
+});
+
 // delete announcement
 router.delete('/delete-announcement/:id', verifyAdmin, async (req, res) => {
     const { id } = req.params;

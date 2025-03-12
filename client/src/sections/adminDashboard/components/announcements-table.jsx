@@ -28,12 +28,18 @@ import {
     PlusIcon,
 } from "@heroicons/react/24/solid";
 
-export function AnnouncementTable({ allAnnouncements, onAddAnnouncement, onDeleteAnnouncement }) {
+export function AnnouncementTable({ allAnnouncements, onAddAnnouncement, onEditAnnouncement, onDeleteAnnouncement }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('all');
     const [openDialog, setOpenDialog] = useState(false);
     const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
     const [openAddDialog, setOpenAddDialog] = useState(false);
+    const [openEditDialog, setOpenEditDialog] = useState(false);
+    const [editingAnnouncement, setEditingAnnouncement] = useState({
+        title: '',
+        description: '',
+        date: ''
+    });
     const [newAnnouncement, setNewAnnouncement] = useState({
         title: '',
         description: '',
@@ -105,6 +111,33 @@ export function AnnouncementTable({ allAnnouncements, onAddAnnouncement, onDelet
             await onDeleteAnnouncement(selectedAnnouncement._id);
             setOpenDialog(false);
             setSelectedAnnouncement(null);
+        }
+    };
+
+    const handleEditClick = (announcement) => {
+        setEditingAnnouncement({
+            title: announcement.title,
+            description: announcement.description,
+            date: new Date(announcement.date).toISOString().split('T')[0]
+        });
+        setSelectedAnnouncement(announcement);
+        setOpenEditDialog(true);
+    };
+
+    const handleEditSubmit = async () => {
+        if (!editingAnnouncement.title || !editingAnnouncement.description || !editingAnnouncement.date) {
+            return;
+        }
+
+        const success = await onEditAnnouncement(selectedAnnouncement._id, editingAnnouncement);
+        if (success) {
+            setOpenEditDialog(false);
+            setSelectedAnnouncement(null);
+            setEditingAnnouncement({
+                title: '',
+                description: '',
+                date: ''
+            });
         }
     };
 
@@ -253,6 +286,7 @@ export function AnnouncementTable({ allAnnouncements, onAddAnnouncement, onDelet
                                                         color="blue"
                                                         size="sm"
                                                         className="flex items-center gap-2"
+                                                        onClick={() => handleEditClick(announcement)}
                                                     >
                                                         <PencilSquareIcon className="h-4 w-4" />
                                                         Edit
@@ -307,6 +341,57 @@ export function AnnouncementTable({ allAnnouncements, onAddAnnouncement, onDelet
                         onClick={handleDeleteConfirm}
                     >
                         <span>Confirm Delete</span>
+                    </Button>
+                </DialogFooter>
+            </Dialog>
+
+            {/* Edit Announcement Dialog */}
+            <Dialog open={openEditDialog} handler={() => setOpenEditDialog(false)} size="md">
+                <DialogHeader>Edit Announcement</DialogHeader>
+                <DialogBody divider>
+                    <div className="grid gap-6">
+                        <Input
+                            label="Title"
+                            value={editingAnnouncement.title}
+                            onChange={(e) => setEditingAnnouncement(prev => ({ ...prev, title: e.target.value }))}
+                        />
+                        <Textarea
+                            label="Description"
+                            value={editingAnnouncement.description}
+                            onChange={(e) => setEditingAnnouncement(prev => ({ ...prev, description: e.target.value }))}
+                        />
+                        <Input
+                            type="date"
+                            label="Date"
+                            value={editingAnnouncement.date}
+                            onChange={(e) => setEditingAnnouncement(prev => ({ ...prev, date: e.target.value }))}
+                        />
+                    </div>
+                </DialogBody>
+                <DialogFooter>
+                    <Button
+                        variant="text"
+                        color="gray"
+                        onClick={() => {
+                            setOpenEditDialog(false);
+                            setSelectedAnnouncement(null);
+                            setEditingAnnouncement({
+                                title: '',
+                                description: '',
+                                date: ''
+                            });
+                        }}
+                        className="mr-1"
+                    >
+                        <span>Cancel</span>
+                    </Button>
+                    <Button
+                        variant="gradient"
+                        color="orange"
+                        onClick={handleEditSubmit}
+                        disabled={!editingAnnouncement.title || !editingAnnouncement.description || !editingAnnouncement.date}
+                    >
+                        <span>Save Changes</span>
                     </Button>
                 </DialogFooter>
             </Dialog>
