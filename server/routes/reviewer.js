@@ -57,7 +57,7 @@ router.post('/view-assigned-submissions/:filename', verifyReviewer, async (req, 
     if (!file) {
         return res.status(404).json({ message: 'File not found.' });
     }
-
+    console.log(file)
     const filePath = path.resolve(__dirname, '../uploads', req.params.filename); // Correct path to the root 'uploads' directory
     res.sendFile(filePath);
 })

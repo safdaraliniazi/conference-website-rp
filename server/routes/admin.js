@@ -236,11 +236,33 @@ router.post('/add-new-announcement', verifyAdmin, async (req, res) => {
             date
         });
 
-        await newAnnouncement.save();
-        res.status(201).json({ message: 'Announcement created successfully' });
+        const savedAnnouncement = await newAnnouncement.save();
+        res.status(201).json(savedAnnouncement);
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ error: 'Failed to create announcement' });
+    }
+});
+
+// delete announcement
+router.delete('/delete-announcement/:id', verifyAdmin, async (req, res) => {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ error: 'Invalid announcement ID' });
+    }
+
+    try {
+        const deletedAnnouncement = await Announcement.findByIdAndDelete(id);
+
+        if (!deletedAnnouncement) {
+            return res.status(404).json({ error: 'Announcement not found' });
+        }
+
+        res.status(200).json({ message: 'Announcement deleted successfully' });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Failed to delete announcement' });
     }
 });
 

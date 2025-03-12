@@ -1,50 +1,44 @@
 import React, { useEffect, useState } from 'react'
-import { Avatar, Button, Card, CardBody, CardFooter, CardHeader, Chip, IconButton, Input, Tab, Tabs, TabsHeader, Tooltip, Typography } from '@material-tailwind/react';
-import { MagnifyingGlassIcon, PencilIcon, UserPlusIcon } from '@heroicons/react/24/solid';
-import ReviewerSelect from './reviewerSelect';
+import {
+    Avatar,
+    Button,
+    Card,
+    CardBody,
+    CardFooter,
+    CardHeader,
+    Chip,
+    Input,
+    Tab,
+    Tabs,
+    TabsHeader,
+    Typography,
+    Select,
+    Option
+} from '@material-tailwind/react';
+import {
+    MagnifyingGlassIcon,
+    DocumentTextIcon,
+    ClockIcon,
+    CheckCircleIcon,
+    XCircleIcon,
+    DocumentCheckIcon,
+    ArrowPathIcon,
+    UserGroupIcon,
+    CreditCardIcon
+} from '@heroicons/react/24/solid';
+import API_BASE_URL from "../../../config/api";
+import ReviewerSelect from './reviewer-select';
 import AcceptOrRejectSubmissionModal from './accept-or-reject-submission-modal';
 import * as XLSX from 'xlsx';
-import API_BASE_URL from "../../../config/api";
-
 
 function ViewAllSubmissionsTable() {
     const [files, setFiles] = useState([]);
     const [error, setError] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [activeTab, setActiveTab] = useState('all');
     const [allReviewers, setAllReviewers] = useState([]);
 
-    const handleDownloadExcel = () => {
-        // Define headers for the Excel file with only necessary details
-        const headers = ["Name", "Email", "File Name", "Track", "Status", "Recommendation"];
-
-        // Map `files` data to the format needed for Excel
-        const data = files.map(file => [
-            file.name,                               // Name of the file submitter
-            file.email,                              // Email of the file submitter
-            file.filename,                           // File name
-            file.track,                              // Track information
-            file.status,                             // Submission status
-            file.review.recommendation,              // Review recommendation (e.g., accept/reject)
-            // file.reviewer                            // Reviewer ID
-        ]);
-
-        // Add headers at the top of data
-        const worksheetData = [headers, ...data];
-
-        // Create a new workbook and worksheet
-        const workbook = XLSX.utils.book_new();
-        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-
-        // Append worksheet to workbook
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Submissions");
-
-        // Generate Excel file and trigger download
-        XLSX.writeFile(workbook, "submissions.xlsx");
-    };
-
-
-    // view all user submissions
     useEffect(() => {
-        // Fetch the list of files from the server with Authorization header
         const fetchFiles = async () => {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/admin/view-all-user-submissions`, {
@@ -55,134 +49,230 @@ function ViewAllSubmissionsTable() {
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Error fetching files: ${response.statusText}`);
+                    throw new Error(`Error fetching submissions: ${response.statusText}`);
                 }
 
                 const data = await response.json();
                 setFiles(data);
             } catch (error) {
                 setError(error.message);
-                console.error('Error fetching files:', error);
+                console.error('Error fetching submissions:', error);
             }
         };
 
         fetchFiles();
     }, []);
 
-    // get all reviewers
     useEffect(() => {
-        const fetchUsers = async () => {
+        const fetchReviewers = async () => {
             try {
-                const token = localStorage.getItem('token');
                 const response = await fetch(`${API_BASE_URL}/api/admin/all-reviewers`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
                 });
 
-                if (response.ok) {
-                    const data = await response.json();
-                    setAllReviewers(data);
-                    console.log('All reviewers:', data);
-                } else {
-                    console.error('Failed to fetch users');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch reviewers');
                 }
+
+                const data = await response.json();
+                setAllReviewers(data);
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error fetching reviewers:', error);
             }
         };
 
-        fetchUsers();
+        fetchReviewers();
     }, []);
 
+    const handleFileClick = async (filename) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/api/admin/view-all-user-submissions/${filename}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Error opening file');
+            }
+
+            const blob = await response.blob();
+            const newUrl = window.URL.createObjectURL(blob);
+            window.open(newUrl, '_blank');
+        } catch (error) {
+            setError(error.message);
+            console.error('Error opening file:', error);
+        }
+    };
+
+    const handleExportToExcel = () => {
+        const worksheet = XLSX.utils.json_to_sheet(
+            files.map(file => ({
+                Author: file.name,
+                Email: file.email,
+                Status: file.status,
+                Track: file.track.replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase()),
+                Reviewer: file.reviewer ? allReviewers.find(r => r._id === file.reviewer)?.fullName || 'Not Found' : 'Not Assigned',
+                SubmissionDate: new Date(file.createdAt).toLocaleDateString()
+            }))
+        );
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Submissions");
+        XLSX.writeFile(workbook, "submissions.xlsx");
+    };
 
     const TABS = [
         {
             label: "All",
             value: "all",
+            icon: DocumentTextIcon
         },
         {
-            label: "Monitored",
-            value: "monitored",
+            label: "Pending",
+            value: "pending",
+            icon: ClockIcon
         },
         {
-            label: "Unmonitored",
-            value: "unmonitored",
+            label: "Reviewed",
+            value: "reviewed",
+            icon: DocumentCheckIcon
         },
+        {
+            label: "Registered",
+            value: "registered",
+            icon: CreditCardIcon
+        }
     ];
 
-    const TABLE_HEAD = ["Name", "File Name", "Status", "Members", "Track", "Reviewer", ""];
+    const TABLE_HEAD = ["Author", "Paper", "Status", "Members", "Track", "Reviewer", "Action"];
 
-    const handleFileClick = (filename) => {
-        // Open the file in a new tab with Authorization header
-        const token = localStorage.getItem('token');
-        const url = `${API_BASE_URL}/api/admin/view-all-user-submissions/${filename}`;
-
-        fetch(url, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Error opening file');
-                }
-                return response.blob();
-            })
-            .then(blob => {
-                const newUrl = window.URL.createObjectURL(blob);
-                window.open(newUrl, '_blank');
-            })
-            .catch(error => {
-                setError(error.message);
-                console.error('Error opening file:', error);
-            });
+    const getStatusColor = (status) => {
+        switch (status.toLowerCase()) {
+            case 'pending':
+                return 'orange';
+            case 'reviewed':
+                return 'blue';
+            case 'accepted':
+                return 'green';
+            case 'rejected':
+                return 'red';
+            case 'revision submitted':
+                return 'purple';
+            case 'in verification':
+                return 'cyan';
+            default:
+                return 'blue-gray';
+        }
     };
-    return (
 
-        <div>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            <Card className="h-full w-full">
+    const getStatusIcon = (status) => {
+        switch (status.toLowerCase()) {
+            case 'pending':
+                return <ClockIcon className="h-4 w-4" />;
+            case 'reviewed':
+                return <DocumentCheckIcon className="h-4 w-4" />;
+            case 'accepted':
+                return <CheckCircleIcon className="h-4 w-4" />;
+            case 'rejected':
+                return <XCircleIcon className="h-4 w-4" />;
+            case 'revision submitted':
+                return <ArrowPathIcon className="h-4 w-4" />;
+            case 'in verification':
+                return <CreditCardIcon className="h-4 w-4" />;
+            default:
+                return <DocumentTextIcon className="h-4 w-4" />;
+        }
+    };
+
+    const filteredFiles = files.filter(file => {
+        const matchesSearch = (
+            file.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            file.filename.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            file.track.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            file.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (file.reviewer && allReviewers.find(r => r._id === file.reviewer)?.fullName.toLowerCase().includes(searchQuery.toLowerCase()))
+        );
+
+        if (activeTab === 'all') return matchesSearch;
+        if (activeTab === 'pending') return matchesSearch && file.status.toLowerCase() === 'pending';
+        if (activeTab === 'reviewed') return matchesSearch && (
+            file.status.toLowerCase() === 'reviewed' ||
+            file.status.toLowerCase() === 'accepted' ||
+            file.status.toLowerCase() === 'rejected'
+        );
+        if (activeTab === 'registered') return matchesSearch && (
+            file.status.toLowerCase() === 'in verification' ||
+            file.status.toLowerCase().includes('registered')
+        );
+
+        return matchesSearch;
+    });
+
+    return (
+        <div className="relative">
+            {error && (
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <Typography color="red" className="flex items-center gap-2">
+                        <XCircleIcon className="w-5 h-5" />
+                        {error}
+                    </Typography>
+                </div>
+            )}
+
+            <Card className="h-full w-full overflow-hidden">
                 <CardHeader floated={false} shadow={false} className="rounded-none">
-                    <div className="mb-8 flex items-center justify-between gap-8">
+                    <div className="mb-4 flex items-center justify-between">
                         <div>
                             <Typography variant="h5" color="blue-gray">
-                                Members list
+                                All Submissions
                             </Typography>
                             <Typography color="gray" className="mt-1 font-normal">
-                                See information about all members
+                                Manage and track all conference paper submissions
                             </Typography>
                         </div>
-                        <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-                            <Button variant="outlined" size="sm" onClick={handleDownloadExcel}>
-                                Download Excel File
-                            </Button>
-                            <Button className="flex items-center gap-3" size="sm">
-                                <UserPlusIcon strokeWidth={2} className="h-4 w-4" /> Add member
-                            </Button>
-                        </div>
+                        <Button
+                            color="orange"
+                            size="sm"
+                            className="flex items-center gap-2"
+                            onClick={handleExportToExcel}
+                        >
+                            <DocumentTextIcon className="h-4 w-4" />
+                            Export to Excel
+                        </Button>
                     </div>
                     <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-                        <Tabs value="all" className="w-full md:w-max">
+                        <Tabs value={activeTab} className="w-full md:w-max">
                             <TabsHeader>
-                                {TABS.map(({ label, value }) => (
-                                    <Tab key={value} value={value}>
-                                        &nbsp;&nbsp;{label}&nbsp;&nbsp;
+                                {TABS.map(({ label, value, icon: Icon }) => (
+                                    <Tab
+                                        key={value}
+                                        value={value}
+                                        onClick={() => setActiveTab(value)}
+                                        className="flex items-center gap-2"
+                                    >
+                                        <Icon className="h-4 w-4" />
+                                        {label}
                                     </Tab>
                                 ))}
                             </TabsHeader>
                         </Tabs>
                         <div className="w-full md:w-72">
                             <Input
-                                label="Search"
+                                label="Search submissions"
                                 icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
                     </div>
                 </CardHeader>
-                <CardBody className="px-0">
-                    <table className="mt-4 w-full min-w-max table-auto text-left">
+                <CardBody className="overflow-x-auto px-0">
+                    <table className="w-full min-w-max table-auto text-left">
                         <thead>
                             <tr>
                                 {TABLE_HEAD.map((head) => (
@@ -193,7 +283,7 @@ function ViewAllSubmissionsTable() {
                                         <Typography
                                             variant="small"
                                             color="blue-gray"
-                                            className="font-normal leading-none opacity-70"
+                                            className="font-semibold leading-none opacity-70"
                                         >
                                             {head}
                                         </Typography>
@@ -202,138 +292,141 @@ function ViewAllSubmissionsTable() {
                             </tr>
                         </thead>
                         <tbody>
-                            {files.map(
-                                (submission, index) => {
-                                    const isLast = index === files.length - 1;
-                                    const classes = isLast
-                                        ? "p-4"
-                                        : "p-4 border-b border-blue-gray-50";
+                            {filteredFiles.map((submission, index) => {
+                                const isLast = index === filteredFiles.length - 1;
+                                const classes = isLast
+                                    ? "p-4"
+                                    : "p-4 border-b border-blue-gray-50";
 
-                                    return (
-                                        <tr key={submission._id}>
-                                            {/* columns */}
-                                            <td className={classes}>
-                                                <div className="flex items-center gap-3">
-                                                    <Avatar src={'https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1480&q=80'} alt={submission.name} size="sm" />
-                                                    <div className="flex flex-col">
-                                                        <Typography
-                                                            variant="small"
-                                                            color="blue-gray"
-                                                            className="font-normal"
-                                                        >
-                                                            {submission.name}
-                                                        </Typography>
-                                                        <Typography
-                                                            variant="small"
-                                                            color="blue-gray"
-                                                            className="font-normal opacity-70"
-                                                        >
-                                                            {submission.email}
-                                                        </Typography>
-                                                    </div>
-                                                </div>
-                                            </td>
-
-                                            {/* file name */}
-                                            <td className={classes}>
+                                return (
+                                    <tr key={submission._id} className="hover:bg-orange-50/50 transition-colors">
+                                        {/* Author */}
+                                        <td className={classes}>
+                                            <div className="flex items-center gap-3">
+                                                <Avatar
+                                                    src={submission.avatar || 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1480&q=80'}
+                                                    alt={submission.name}
+                                                    size="sm"
+                                                    className="border-2 border-orange-100"
+                                                />
                                                 <div className="flex flex-col">
                                                     <Typography
                                                         variant="small"
                                                         color="blue-gray"
-                                                        className="font-normal"
+                                                        className="font-semibold"
                                                     >
-                                                        <span className='cursor-pointer' onClick={() => handleFileClick(submission.filename)}>
-                                                            {submission.filename}
-                                                        </span>
+                                                        {submission.name}
+                                                    </Typography>
+                                                    <Typography
+                                                        variant="small"
+                                                        color="blue-gray"
+                                                        className="opacity-70"
+                                                    >
+                                                        {submission.email}
                                                     </Typography>
                                                 </div>
-                                            </td>
+                                            </div>
+                                        </td>
 
-                                            {/* status */}
-                                            <td className={classes}>
-                                                <div className="w-max">
-                                                    <Chip
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        value={submission.status}
-                                                        color={"blue-gray"}
-                                                    />
-                                                </div>
-                                            </td>
+                                        {/* Paper */}
+                                        <td className={classes}>
+                                            <Typography
+                                                variant="small"
+                                                color="blue-gray"
+                                                className="font-normal cursor-pointer hover:text-orange-500 transition-colors flex items-center gap-2"
+                                                onClick={() => handleFileClick(submission.filename)}
+                                            >
+                                                <DocumentTextIcon className="h-4 w-4" />
+                                                {submission.filename}
+                                            </Typography>
+                                        </td>
 
-                                            {/* members */}
-                                            <td className={classes}>
-                                                <ul>
-                                                    {submission.members.map((member) => {
-                                                        return <li key={member.email}>{member.name} - {member.email}</li>
-                                                    })}
-                                                </ul>
-                                            </td>
+                                        {/* Status */}
+                                        <td className={classes}>
+                                            <div className="w-max">
+                                                <Chip
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    value={
+                                                        <div className="flex items-center gap-2">
+                                                            {getStatusIcon(submission.status)}
+                                                            <span>{submission.status}</span>
+                                                        </div>
+                                                    }
+                                                    color={getStatusColor(submission.status)}
+                                                />
+                                            </div>
+                                        </td>
 
-                                            {/* track */}
-                                            <td className={classes}>
-                                                <div className="flex flex-col">
+                                        {/* Members */}
+                                        <td className={classes}>
+                                            <div className="flex flex-col gap-1">
+                                                {submission.members.map((member) => (
                                                     <Typography
+                                                        key={member.email}
                                                         variant="small"
                                                         color="blue-gray"
                                                         className="font-normal"
                                                     >
-                                                        {submission.track.replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase())}
+                                                        {member.name}
                                                     </Typography>
-                                                </div>
-                                            </td>
+                                                ))}
+                                            </div>
+                                        </td>
 
-                                            {/* reviewer */}
-                                            <td className={classes}>
-                                                <div className="flex flex-col items-start">
-                                                    <ReviewerSelect
-                                                        submissionId={submission._id}
-                                                        currentReviewer={submission.reviewer}
-                                                        allReviewers={allReviewers}
-                                                    />
-                                                </div>
-                                            </td>
+                                        {/* Track */}
+                                        <td className={classes}>
+                                            <Typography
+                                                variant="small"
+                                                color="blue-gray"
+                                                className="font-normal"
+                                            >
+                                                {submission.track.replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase())}
+                                            </Typography>
+                                        </td>
 
-                                            {/* action */}
-                                            <td className={classes}>
-                                                <div className="flex flex-col text-center">
-                                                    <Typography
-                                                        variant="small"
-                                                        color="blue-gray"
-                                                        className="font-normal"
-                                                    >
-                                                        {submission.action === "View Screenshot" ? (
-                                                            <AcceptOrRejectSubmissionModal submissionId={submission._id} image={submission.screenshot} />
-                                                        ) : (
-                                                            <div>_</div>
-                                                        )}
-                                                    </Typography>
-                                                </div>
-                                            </td>
+                                        {/* Reviewer */}
+                                        <td className={classes}>
+                                            <div className="w-48">
+                                                <ReviewerSelect
+                                                    submissionId={submission._id}
+                                                    currentReviewer={submission.reviewer}
+                                                    allReviewers={allReviewers}
+                                                />
+                                            </div>
+                                        </td>
 
-                                        </tr>
-                                    );
-                                },
-                            )}
+                                        {/* Action */}
+                                        <td className={classes}>
+                                            {submission.action === "View Screenshot" ? (
+                                                <AcceptOrRejectSubmissionModal
+                                                    submissionId={submission._id}
+                                                    image={submission.screenshot}
+                                                />
+                                            ) : (
+                                                <Typography
+                                                    variant="small"
+                                                    color="blue-gray"
+                                                    className="font-normal"
+                                                >
+                                                    {submission.action || "N/A"}
+                                                </Typography>
+                                            )}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </CardBody>
                 <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
                     <Typography variant="small" color="blue-gray" className="font-normal">
-                        Page 1 of 10
+                        Showing {filteredFiles.length} submissions
                     </Typography>
-                    <div className="flex gap-2">
-                        <Button variant="outlined" size="sm">
-                            Previous
-                        </Button>
-                        <Button variant="outlined" size="sm">
-                            Next
-                        </Button>
-                    </div>
                 </CardFooter>
             </Card>
         </div>
-    )
+    );
 }
 
-export default ViewAllSubmissionsTable
+export default ViewAllSubmissionsTable;
