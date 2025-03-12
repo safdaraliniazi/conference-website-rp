@@ -3,6 +3,8 @@ const User = require('../models/User');
 const Submission = require('../models/Submission');
 const mongoose = require('mongoose');
 const { verifyAdmin } = require('../utils/middleware');
+const path = require('path');
+const fs = require('fs');
 
 const {
     sendToReviewerNewSubmissionAssigned,
@@ -89,15 +91,38 @@ router.post('/view-all-user-submissions', verifyAdmin, async (req, res) => {
 
 // Route to serve files
 router.post('/view-all-user-submissions/:filename', verifyAdmin, async (req, res) => {
-    const file = await Submission.findOne({ filename: req.params.filename, userId: req.user.userId });
+    try {
+        const file = await Submission.findOne({ filename: req.params.filename });
 
-    if (!file) {
-        return res.status(404).json({ message: 'File not found.' });
+        if (!file) {
+            return res.status(404).json({ message: 'File not found.' });
+        }
+
+        const filePath = path.join(__dirname, '..', 'uploads', req.params.filename);
+
+        // Check if file exists in the filesystem
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({ message: 'File not found in storage.' });
+        }
+
+        // Set appropriate headers for PDF files
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="${req.params.filename}"`);
+
+        // Stream the file instead of loading it entirely into memory
+        const fileStream = fs.createReadStream(filePath);
+        fileStream.pipe(res);
+
+        // Handle stream errors
+        fileStream.on('error', (error) => {
+            console.error('Error streaming file:', error);
+            res.status(500).json({ message: 'Error streaming file.' });
+        });
+    } catch (error) {
+        console.error('Error serving file:', error);
+        res.status(500).json({ message: 'Internal server error.' });
     }
-
-    const filePath = path.resolve(__dirname, '../uploads', req.params.filename); // Correct path to the root 'uploads' directory
-    res.sendFile(filePath);
-})
+});
 
 
 // Route to update submission with reviewer id

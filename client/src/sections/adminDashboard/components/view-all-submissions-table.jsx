@@ -37,6 +37,7 @@ function ViewAllSubmissionsTable() {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('all');
     const [allReviewers, setAllReviewers] = useState([]);
+    const [fileLoading, setFileLoading] = useState(false);
 
     useEffect(() => {
         const fetchFiles = async () => {
@@ -89,6 +90,7 @@ function ViewAllSubmissionsTable() {
 
     const handleFileClick = async (filename) => {
         try {
+            setFileLoading(true);
             const token = localStorage.getItem('token');
             const response = await fetch(`${API_BASE_URL}/api/admin/view-all-user-submissions/${filename}`, {
                 method: 'POST',
@@ -98,15 +100,29 @@ function ViewAllSubmissionsTable() {
             });
 
             if (!response.ok) {
-                throw new Error('Error opening file');
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Error opening file');
             }
 
             const blob = await response.blob();
-            const newUrl = window.URL.createObjectURL(blob);
-            window.open(newUrl, '_blank');
+            if (blob.size === 0) {
+                throw new Error('File is empty or not accessible');
+            }
+
+            // Create object URL and open in new tab
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.target = '_blank';
+            link.click();
+
+            // Clean up
+            window.URL.revokeObjectURL(url);
         } catch (error) {
-            setError(error.message);
+            setError(`Error opening file: ${error.message}`);
             console.error('Error opening file:', error);
+        } finally {
+            setFileLoading(false);
         }
     };
 
@@ -330,15 +346,26 @@ function ViewAllSubmissionsTable() {
 
                                         {/* Paper */}
                                         <td className={classes}>
-                                            <Typography
-                                                variant="small"
+                                            <Button
+                                                variant="text"
                                                 color="blue-gray"
-                                                className="font-normal cursor-pointer hover:text-orange-500 transition-colors flex items-center gap-2"
+                                                className="flex items-center gap-2 normal-case"
                                                 onClick={() => handleFileClick(submission.filename)}
+                                                disabled={fileLoading}
                                             >
-                                                <DocumentTextIcon className="h-4 w-4" />
-                                                {submission.filename}
-                                            </Typography>
+                                                {fileLoading ? (
+                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500" />
+                                                ) : (
+                                                    <DocumentTextIcon className="h-4 w-4" />
+                                                )}
+                                                <Typography
+                                                    variant="small"
+                                                    color="blue-gray"
+                                                    className="font-normal"
+                                                >
+                                                    {submission.filename}
+                                                </Typography>
+                                            </Button>
                                         </td>
 
                                         {/* Status */}
